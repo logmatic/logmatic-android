@@ -1,6 +1,9 @@
 package io.logmatic.asynclogger.net;
 
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
 import java.text.DateFormat;
@@ -98,5 +101,14 @@ public class LogmaticClient {
 
     public void disableTimestamping() {
         timestamping = false;
+    }
+
+    public void log(Object anonymousObject) {
+
+        Gson gson = new GsonBuilder()
+                .serializeNulls()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+        log(gson.toJson(anonymousObject));
     }
 }

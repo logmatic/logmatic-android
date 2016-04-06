@@ -1,19 +1,14 @@
 package io.logmatic.asynclogger.net;
 
-import com.google.gson.Gson;
-
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -25,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class LogmaticClientTest { //extends AndroidTestCase {
+public class LogmaticClientTest {
 
 
     @Mock
@@ -52,7 +47,7 @@ public class LogmaticClientTest { //extends AndroidTestCase {
 
 
     @Test
-    public void shouldLogAMessage() throws IOException {
+    public void shouldLogASimpleMessage() throws IOException {
 
 
         // GIVEN a connection to Logmatic
@@ -105,7 +100,7 @@ public class LogmaticClientTest { //extends AndroidTestCase {
         // GIVEN a connection to Logmatic
         LogmaticClient client = new LogmaticClient(apiKey, endpoint);
         client.disableTimestamping();
-        
+
         // WHEN metas are added
         client.addMeta("long", 123L);
         client.addMeta("double", 1.0);
@@ -127,6 +122,53 @@ public class LogmaticClientTest { //extends AndroidTestCase {
         assertThat(output, is(expected));
 
 
+    }
+
+    @Test
+    public void souldLogAJavaObjectAsMessage() {
+
+
+        ArgumentCaptor<byte[]> data = ArgumentCaptor.forClass(byte[].class);
+
+
+        // GIVEN a connection to Logmatic
+        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        client.disableTimestamping();
+
+        // WHEN messages are logged
+
+        client.log(new AnonymousObject());
+
+
+        //THEN messages must be arrived to the endpoint
+        verify(endpoint).send(data.capture());
+
+        String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"message\":\"message one\"}";
+        String output = new String(data.getValue());
+
+
+        assertThat(output, is(expected));
+
+    }
+
+
+    private class AnonymousObject {
+
+        String aString = "string";
+        Double aDouble = 1.0;
+        List<String> anArrayOfStrings = Arrays.asList("string_one", "string_two");
+
+        public String getAString() {
+            return aString;
+        }
+
+        public Double getADouble() {
+            return aDouble;
+        }
+
+        public List<String> getAnArrayOfStrings() {
+            return anArrayOfStrings;
+        }
     }
 
 
