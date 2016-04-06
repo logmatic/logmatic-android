@@ -52,4 +52,30 @@ public class LogmaticClient {
     public boolean isConnected() {
         return endpoint.isConnected();
     }
+
+    public void addMeta(String key, String value) {
+        extraArgs.addProperty(key, value);
+    }
+
+    /* add metadata of all types */
+
+    public void addMeta(String key, Long value) {
+        extraArgs.addProperty(key, value);
+    }
+
+    public void addMeta(String key, Integer value) {
+        extraArgs.addProperty(key, value);
+    }
+
+    public void addMeta(String key, Float value) {
+        extraArgs.addProperty(key, value);
+    }
+
+    public void addMeta(String key, Double value) {
+        extraArgs.addProperty(key, value);
+    }
+
+    public void addMeta(String key, Boolean value) {
+        extraArgs.addProperty(key, value);
+    }
 }

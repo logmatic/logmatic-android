@@ -90,4 +90,38 @@ public class LogmaticClientTest { //extends AndroidTestCase {
     }
 
 
+    @Test
+    public void shouldAddMeta() throws IOException {
+
+
+        ArgumentCaptor<byte[]> data = ArgumentCaptor.forClass(byte[].class);
+
+
+        // GIVEN a connection to Logmatic
+        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+
+        // WHEN metas are added
+        client.addMeta("long", 123L);
+        client.addMeta("double", 1.0);
+        client.addMeta("string", "string");
+        client.addMeta("int", 1);
+        client.addMeta("float", 2.0);
+        client.addMeta("string", "string");
+        client.log("message one");
+
+
+        //THEN messages must be arrived to the endpoint
+        verify(endpoint).send(data.capture());
+
+
+        String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"message\":\"message one\"}";
+        String output = new String(data.getValue());
+
+
+        assertThat(output, is(expected));
+
+
+    }
+
+
 }
