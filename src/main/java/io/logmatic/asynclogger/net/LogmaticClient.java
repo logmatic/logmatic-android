@@ -3,17 +3,26 @@ package io.logmatic.asynclogger.net;
 
 import com.google.gson.JsonObject;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
 public class LogmaticClient {
 
 
-    public static final int DST_PORT = 10515;
-    public static final String DST_HOST = "api.logmatic.io";
+    private static final int DST_PORT = 10515;
+    private static final String DST_HOST = "api.logmatic.io";
+    private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+    SimpleDateFormat simpleDateFormat = null;
     StringBuilder eventBuilder = new StringBuilder();
-    //public static final String DST_HOST = "192.168.50.45";
 
     private SSLSocketEndpoint endpoint;
     private String key;
     private JsonObject extraArgs;
+    private boolean timestamping = true;
 
     public LogmaticClient(String logmaticAPIKey) {
 
@@ -28,6 +37,9 @@ public class LogmaticClient {
 
         extraArgs = new JsonObject();
 
+        simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
     }
 
 
@@ -35,6 +47,11 @@ public class LogmaticClient {
 
         JsonObject event = extraArgs.getAsJsonObject();
         event.addProperty("message", message);
+
+        // datetime
+        if (timestamping) {
+            event.addProperty("datetime", simpleDateFormat.format(new Date()));
+        }
 
         String data = eventBuilder
                 .append(key)
@@ -77,5 +94,9 @@ public class LogmaticClient {
 
     public void addMeta(String key, Boolean value) {
         extraArgs.addProperty(key, value);
+    }
+
+    public void disableTimestamping() {
+        timestamping = false;
     }
 }

@@ -1,5 +1,8 @@
 package io.logmatic.asynclogger.net;
 
+import com.google.gson.Gson;
+
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -9,6 +12,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Objects;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -71,6 +76,7 @@ public class LogmaticClientTest { //extends AndroidTestCase {
 
         // GIVEN a connection to Logmatic
         LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        client.disableTimestamping();
 
         // WHEN messages are logged
         client.log("message one");
@@ -82,7 +88,6 @@ public class LogmaticClientTest { //extends AndroidTestCase {
 
         String expected = apiKey + " {\"message\":\"message one\"}";
         String output = new String(data.getValue());
-
 
         assertThat(output, is(expected));
 
@@ -99,7 +104,8 @@ public class LogmaticClientTest { //extends AndroidTestCase {
 
         // GIVEN a connection to Logmatic
         LogmaticClient client = new LogmaticClient(apiKey, endpoint);
-
+        client.disableTimestamping();
+        
         // WHEN metas are added
         client.addMeta("long", 123L);
         client.addMeta("double", 1.0);
