@@ -72,7 +72,7 @@ public class SSLSocketEndpointTest {
 
 
     @Test
-    public void shouldTryToConnectCloseBeforeStartNewConnection() throws IOException {
+    public void shouldCloseConnectionBeforeStartNewOne() throws IOException {
 
         // mock stuff
         SSLSocket fakeSocket = mock(SSLSocket.class);

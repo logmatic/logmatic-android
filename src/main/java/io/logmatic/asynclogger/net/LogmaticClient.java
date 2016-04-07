@@ -17,6 +17,11 @@ public class LogmaticClient {
     private static final int DST_PORT = 10515;
     private static final String DST_HOST = "api.logmatic.io";
     private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
+    ;
 
     SimpleDateFormat simpleDateFormat = null;
     StringBuilder eventBuilder = new StringBuilder();
@@ -49,19 +54,14 @@ public class LogmaticClient {
 
         JsonObject event = extraArgs.getAsJsonObject();
         event.addProperty("message", message);
+        emit(event);
 
-        // datetime
-        if (timestamping) {
-            event.addProperty("datetime", simpleDateFormat.format(new Date()));
-        }
+    }
+    public void log(Object anonymousObject) {
 
-        String data = eventBuilder
-                .append(key)
-                .append(" ")
-                .append(event.toString()).toString();
-
-        endpoint.send(data.getBytes());
-
+        JsonObject event = extraArgs.getAsJsonObject();
+        event.add("message", gson.toJsonTree(anonymousObject));
+        emit(event);
     }
 
     public String getAPIKey() {
@@ -98,16 +98,29 @@ public class LogmaticClient {
         extraArgs.addProperty(key, value);
     }
 
+    public void addMeta(String key, Date value) {
+        extraArgs.addProperty(key, value.getTime());
+    }
+
     public void disableTimestamping() {
         timestamping = false;
     }
 
-    public void log(Object anonymousObject) {
 
-        Gson gson = new GsonBuilder()
-                .serializeNulls()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .create();
-        log(gson.toJson(anonymousObject));
+
+    private void emit(JsonObject event) {
+
+        // datetime
+        if (timestamping) {
+            event.addProperty("datetime", simpleDateFormat.format(new Date()));
+        }
+
+        String data = eventBuilder
+                .append(key)
+                .append(" ")
+                .append(event.toString()).toString();
+
+        endpoint.send(data.getBytes());
     }
+
 }

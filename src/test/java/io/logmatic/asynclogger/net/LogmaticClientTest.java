@@ -1,7 +1,5 @@
 package io.logmatic.asynclogger.net;
 
-import android.test.suitebuilder.annotation.SmallTest;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -10,6 +8,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -107,6 +106,7 @@ public class LogmaticClientTest {
         client.addMeta("int", 1);
         client.addMeta("float", 2.0);
         client.addMeta("string", "string");
+        client.addMeta("date", new Date(1460041488000L));
         client.log("message one");
 
 
@@ -114,7 +114,7 @@ public class LogmaticClientTest {
         verify(endpoint).send(data.capture());
 
 
-        String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"message\":\"message one\"}";
+        String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"date\":1460041488000,\"message\":\"message one\"}";
         String output = new String(data.getValue());
 
 
@@ -136,14 +136,13 @@ public class LogmaticClientTest {
         client.disableTimestamping();
 
         // WHEN messages are logged
-
         client.log(new AnonymousObject());
 
 
         //THEN messages must be arrived to the endpoint
         verify(endpoint).send(data.capture());
 
-        String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"message\":\"message one\"}";
+        String expected = apiKey + " {\"message\":{\"a_string\":\"string\",\"a_double\":1.0,\"an_array_of_strings\":[\"string_one\",\"string_two\"]}}";
         String output = new String(data.getValue());
 
 
