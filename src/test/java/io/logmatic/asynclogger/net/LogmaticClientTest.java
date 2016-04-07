@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -16,7 +18,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SmallTest
 @RunWith(MockitoJUnitRunner.class)
 public class LogmaticClientTest {
 
@@ -122,7 +123,6 @@ public class LogmaticClientTest {
 
     }
 
-    /*
 
     @Test
     public void souldLogAJavaObjectAsMessage() {
@@ -168,7 +168,6 @@ public class LogmaticClientTest {
         public List<String> getAnArrayOfStrings() {
             return anArrayOfStrings;
         }
-    }*/
-
+    }
 
 }
