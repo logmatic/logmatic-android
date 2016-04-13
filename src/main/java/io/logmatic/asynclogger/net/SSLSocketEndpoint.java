@@ -22,7 +22,7 @@ public class SSLSocketEndpoint {
         this.hostname = hostname;
         this.sslSocket = null;
 
-        tryConnnection();
+        openConnection();
     }
 
     public SSLSocketEndpoint(SSLSocket socket) {
@@ -30,7 +30,7 @@ public class SSLSocketEndpoint {
         this.hostname = null;
         this.sslSocket = socket;
 
-        tryConnnection();
+        openConnection();
     }
 
 
@@ -54,14 +54,6 @@ public class SSLSocketEndpoint {
         return sslSocket.isConnected();
     }
 
-    public boolean tryConnnection() {
-
-        if (isConnected()) return true;
-
-        closeConnection();
-        return openConnection();
-
-    }
 
     public void closeConnection() {
 
@@ -76,7 +68,7 @@ public class SSLSocketEndpoint {
 
     }
 
-    protected boolean openConnection() {
+    public boolean openConnection() {
 
 
         try {

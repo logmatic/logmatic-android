@@ -132,7 +132,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
         client.disableTimestamping();
 
         // WHEN messages are logged

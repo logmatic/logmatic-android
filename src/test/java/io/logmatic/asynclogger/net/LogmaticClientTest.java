@@ -11,6 +11,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import io.logmatic.asynclogger.Logmatic;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
@@ -35,7 +37,7 @@ public class LogmaticClientTest {
         when(endpoint.isConnected()).thenReturn(true);
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
 
         // THEN the endpoint should have received the event
         assertThat(client.isConnected(), is(true));
@@ -49,7 +51,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
 
         // WHEN messages are logged
         client.log("message one");
@@ -68,7 +70,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
         client.disableTimestamping();
 
         // WHEN messages are logged
@@ -96,7 +98,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
         client.disableTimestamping();
 
         // WHEN metas are added
@@ -132,7 +134,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        LogmaticClient client = new LogmaticClient(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, endpoint);
         client.disableTimestamping();
 
         // WHEN messages are logged
