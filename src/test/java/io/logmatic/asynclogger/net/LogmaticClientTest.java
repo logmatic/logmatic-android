@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import io.logmatic.asynclogger.Logmatic;
+import io.logmatic.asynclogger.Logger;
 import io.logmatic.asynclogger.LogmaticAppender;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -44,7 +44,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, appender);
+        Logger client = new Logger(apiKey, appender);
 
 
         // WHEN messages are logged
@@ -64,7 +64,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, appender);
+        Logger client = new Logger(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN messages are logged
@@ -91,7 +91,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, appender);
+        Logger client = new Logger(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN metas are added
@@ -126,7 +126,7 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, appender);
+        Logger client = new Logger(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN messages are logged

@@ -2,12 +2,9 @@ package io.logmatic.asynclogger.net;
 
 import android.util.Log;
 
-import java.io.IOException;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-
-import static android.os.Process.setThreadPriority;
 
 
 public class EndpointManager implements Runnable {
@@ -22,6 +19,7 @@ public class EndpointManager implements Runnable {
     private static BlockingDeque<String> queue;
     private Endpoint endpoint;
     private Thread currentThread;
+    private boolean networkStatus;
 
 
     public EndpointManager(SSLSocketEndpoint endpoint) {
@@ -51,6 +49,7 @@ public class EndpointManager implements Runnable {
 
                         // read the eldest event
                         item = queue.pollFirst(MAX_INACTIVITY, TimeUnit.SECONDS);
+
 
 
                         boolean isSent = endpoint.send(item);
@@ -124,5 +123,9 @@ public class EndpointManager implements Runnable {
 
     public void setCurrentThread(Thread currentThread) {
         this.currentThread = currentThread;
+    }
+
+    public void setNetworkStatus(boolean networkStatus) {
+        this.networkStatus = networkStatus;
     }
 }

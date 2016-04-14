@@ -40,7 +40,6 @@ public class SSLSocketEndpointTest {
 
         // THEN the manager have to just send data
         verify(fakeStream).write(expected.getBytes());
-        verify(fakeStream).flush();
         assertThat(isSent, is(true));
 
 

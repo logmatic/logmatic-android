@@ -35,13 +35,17 @@ public class SSLSocketEndpoint implements Endpoint {
 
 
     @Override
+    public boolean isBulkable() {
+        return false;
+    }
+
+    @Override
     public boolean send(String data) {
 
         if (!isConnected()) return false;
 
         try {
             stream.writeBytes(data + '\n');
-            stream.flush();
             return true;
 
         } catch (IOException e) {

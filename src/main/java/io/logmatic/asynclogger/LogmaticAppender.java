@@ -2,13 +2,11 @@ package io.logmatic.asynclogger;
 
 import android.util.Log;
 
-import java.util.concurrent.BlockingDeque;
-
 import io.logmatic.asynclogger.net.EndpointManager;
 import io.logmatic.asynclogger.net.SSLSocketEndpoint;
 
 
-public class LogmaticAppender {
+public class LogmaticAppender implements  Appender {
 
 
     private final String token;
@@ -58,6 +56,8 @@ public class LogmaticAppender {
     }
 
 
+
+
     public void append(String data) {
 
         // prefix all events by token
@@ -66,4 +66,10 @@ public class LogmaticAppender {
     }
 
 
+    @Override
+    public void updateNetworkStatus(boolean isConnected) {
+
+        manager.setNetworkStatus(isConnected);
+
+    }
 }

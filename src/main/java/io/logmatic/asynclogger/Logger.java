@@ -1,7 +1,6 @@
 package io.logmatic.asynclogger;
 
 
-import android.provider.Settings;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
@@ -13,7 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class Logmatic {
+public class Logger {
 
 
     /* formaters and tools */
@@ -27,7 +26,7 @@ public class Logmatic {
 
     private final String name = null;
     private final String token;
-    private final LogmaticAppender appender;
+    final Appender appender;
 
     private JsonObject extraFields = new JsonObject();
     private boolean timestamping = true;
@@ -35,21 +34,20 @@ public class Logmatic {
     private boolean deviceIdentification = true;
 
 
-    public Logmatic(String yourLogmaticKey) {
+    public Logger(String yourLogmaticKey) {
 
         this.token = yourLogmaticKey;
         this.appender = new LogmaticAppender(token);
 
     }
 
-    public Logmatic(String yourLogmaticKey, LogmaticAppender appender) {
+    public Logger(String yourLogmaticKey, Appender appender) {
 
         this.token = yourLogmaticKey;
         this.appender = appender;
 
 
     }
-
 
 
     public void v(String message) {
@@ -151,15 +149,12 @@ public class Logmatic {
         event.addProperty("message", message);
 
 
-
-
         // add datetime field
         if (timestamping) {
             event.addProperty("datetime", simpleDateFormat.format(new Date()));
         }
 
         appender.append(gson.toJson(event));
-
 
 
     }
