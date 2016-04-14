@@ -23,7 +23,7 @@ public class SSLSocketEndpointTest {
     @Test
     public void shouldSendData() throws IOException {
 
-        byte[] expected = "fake data as bytes".getBytes();
+        String expected = "fake data as bytes";
 
         // mock stuff
         SSLSocket fakeSocket = mock(SSLSocket.class);
@@ -38,8 +38,8 @@ public class SSLSocketEndpointTest {
         // WHEN data is sent to the socket
         boolean isSent = endpoint.send(expected);
 
-        // THEN the endpoint have to just send data
-        verify(fakeStream).write(expected);
+        // THEN the manager have to just send data
+        verify(fakeStream).write(expected.getBytes());
         verify(fakeStream).flush();
         assertThat(isSent, is(true));
 
@@ -50,7 +50,7 @@ public class SSLSocketEndpointTest {
     @Test
     public void shouldReturnFailedOnLostConnection() throws IOException {
 
-        byte[] expected = "fake data as bytes".getBytes();
+        String expected = "fake data as bytes";
 
         // mock stuff
         SSLSocket fakeSocket = mock(SSLSocket.class);
@@ -60,7 +60,7 @@ public class SSLSocketEndpointTest {
         SSLSocketEndpoint endpoint = spy(new SSLSocketEndpoint(fakeSocket));
 
 
-        // GIVEN a disconnected endpoint
+        // GIVEN a disconnected manager
         when(fakeSocket.isConnected()).thenReturn(false);
 
         // WHEN data is sent to the socket
@@ -69,33 +69,6 @@ public class SSLSocketEndpointTest {
 
 
     }
-
-
-    @Test
-    public void shouldCloseConnectionBeforeStartNewOne() throws IOException {
-
-        // mock stuff
-        SSLSocket fakeSocket = mock(SSLSocket.class);
-        OutputStream fakeStream = mock(OutputStream.class);
-        when(fakeSocket.getOutputStream()).thenReturn(fakeStream);
-
-
-        // GIVEN a disconnected socket, then a connected socket
-        when(fakeSocket.isConnected()).thenReturn(false);
-
-        // WHEN a connection is attempted
-        SSLSocketEndpoint endpoint = spy(new SSLSocketEndpoint(fakeSocket));
-        boolean isConnected = endpoint.tryConnnection(); // force for the tests
-
-        // THEN ...
-        verify(endpoint).isConnected(); // check the connection, here not connected
-        verify(endpoint).closeConnection(); // the previous connection is closed
-        verify(endpoint).openConnection(); // a new connection is attempted
-        assertThat(isConnected, is(true)); // the connection is opened
-
-
-    }
-
 
 
 }
