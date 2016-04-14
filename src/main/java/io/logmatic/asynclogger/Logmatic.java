@@ -1,246 +1,217 @@
 package io.logmatic.asynclogger;
 
 
+import android.provider.Settings;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
-
-import io.logmatic.asynclogger.net.EndpointManager;
-import io.logmatic.asynclogger.net.SSLSocketEndpoint;
 
 public class Logmatic {
 
 
-    private final String name = null;
-    private final EndpointManager appender = new EndpointManager();
-
-
-    private static final int DST_PORT = 10515;
-    private static final String DST_HOST = "api.logmatic.io";
+    /* formaters and tools */
     private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
     private static final Gson gson = new GsonBuilder()
             .serializeNulls()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create();
-    ;
 
-    SimpleDateFormat simpleDateFormat = null;
-    StringBuilder eventBuilder = new StringBuilder();
 
-    private SSLSocketEndpoint endpoint;
-    private String key;
-    private JsonObject extraArgs;
+    private final String name = null;
+    private final String token;
+    private final LogmaticAppender appender;
+
+    private JsonObject extraFields = new JsonObject();
     private boolean timestamping = true;
+    private boolean legacyLogger = true;
+    private boolean deviceIdentification = true;
 
-    public Logmatic(String logmaticAPIKey) {
 
-        new Logmatic(key, new SSLSocketEndpoint(DST_HOST, DST_PORT));
+    public Logmatic(String yourLogmaticKey) {
 
-    }
-
-    public Logmatic(String logmaticAPIKey, SSLSocketEndpoint customEndpoint) {
-
-        key = logmaticAPIKey;
-        endpoint = customEndpoint;
-
-        extraArgs = new JsonObject();
-
-        simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+        this.token = yourLogmaticKey;
+        this.appender = new LogmaticAppender(token);
 
     }
 
+    public Logmatic(String yourLogmaticKey, LogmaticAppender appender) {
+
+        this.token = yourLogmaticKey;
+        this.appender = appender;
+
+
+    }
 
 
 
     public void v(String message) {
-        Log.v(getClass().getName(), message);
-        log(message);
+        log(Log.VERBOSE, getClass().getName(), message);
     }
 
     public void v(String tag, String message) {
-        Log.v(tag, message);
-        log(message);
+        log(Log.VERBOSE, tag, message);
     }
 
     public void v(String tag, String message, Throwable tr) {
-        Log.v(tag, message, tr);
-        log(message);
+        log(Log.VERBOSE, tag, message, tr);
     }
 
     public void d(String message) {
-        Log.d(getClass().getName(), message);
-        log(message);
+        log(Log.DEBUG, getClass().getName(), message);
     }
 
     public void d(String tag, String message) {
-        Log.d(tag, message);
-        log(message);
+        log(Log.DEBUG, tag, message);
     }
 
     public void d(String tag, String message, Throwable tr) {
-        Log.d(tag, message, tr);
-        log(message);
+        log(Log.DEBUG, tag, message, tr);
     }
 
     public void i(String message) {
-        Log.i(getClass().getName(), message);
-        log(message);
+        log(Log.INFO, getClass().getName(), message);
     }
 
     public void i(String tag, String message) {
-        Log.i(tag, message);
-        log(message);
+        log(Log.INFO, tag, message);
     }
 
     public void i(String tag, String message, Throwable tr) {
-        Log.i(tag, message, tr);
-        log(message);
-    }
-
-    public void w(String message) {
-        Log.w(getClass().getName(), message);
-        log(message);
-    }
-
-    public void w(String tag, String message) {
-        Log.w(tag, message);
-        log(message);
-    }
-
-    public void w(String tag, String message, Throwable tr) {
-        Log.w(tag, message, tr);
-        log(message);
+        log(Log.INFO, tag, message, tr);
     }
 
     public void e(String message) {
-        Log.e(getClass().getName(), message);
-        log(message);
+        log(Log.ERROR, getClass().getName(), message);
     }
 
     public void e(String tag, String message) {
-        Log.e(tag, message);
-        log(message);
+        log(Log.ERROR, tag, message);
     }
 
     public void e(String tag, String message, Throwable tr) {
-        Log.e(tag, message, tr);
-        log(message);
+        log(Log.ERROR, tag, message, tr);
+    }
+
+    public void w(String message) {
+        log(Log.DEBUG, getClass().getName(), message);
+    }
+
+    public void w(String tag, String message) {
+        log(Log.DEBUG, tag, message);
+    }
+
+    public void w(String tag, String message, Throwable tr) {
+        log(Log.DEBUG, tag, message, tr);
     }
 
     public void wtf(String message) {
-        Log.wtf(getClass().getName(), message);
-        log(message);
+        if (legacyLogger) {
+            Log.wtf(getClass().getName(), message);
+        }
+        log(Log.ERROR, getClass().getName(), message);
     }
 
     public void wtf(String tag, String message) {
-        Log.wtf(tag, message);
-        log(message);
+        if (legacyLogger) {
+            Log.wtf(tag, message);
+        }
+        log(Log.ERROR, tag, message);
     }
 
     public void wtf(String tag, String message, Throwable tr) {
-        Log.wtf(tag, message, tr);
-        log(message);
+        if (legacyLogger) {
+            Log.wtf(tag, message, tr);
+        }
+        log(Log.ERROR, tag, message, tr);
     }
 
 
+    private void log(int level, String tag, String message, Throwable tr) {
+        log(level, tag, message + '\n' + Log.getStackTraceString(tr));
 
-
-
-
-
-
-
-    public static JsonElement toJson(Object source) {
-        return gson.toJsonTree(source).;
     }
 
 
-    public void log(String message) {
+    private void log(int level, String tag, String message) {
 
-        JsonObject event = extraArgs.getAsJsonObject();
+        if (legacyLogger) {
+            Log.println(level, tag, message);
+        }
+
+        // compile extra fields
+        JsonObject event = extraFields.getAsJsonObject();
         event.addProperty("message", message);
-        emit(event);
+
+
+
+
+        // add datetime field
+        if (timestamping) {
+            event.addProperty("datetime", simpleDateFormat.format(new Date()));
+        }
+
+        appender.append(gson.toJson(event));
+
+
 
     }
 
-    public void log(Object anonymousObject) {
 
-        JsonObject event = extraArgs.getAsJsonObject();
-        event.add("message", gson.toJsonTree(anonymousObject));
-        emit(event);
+    /**
+     * Disable  auto-timestamping of events
+     */
+    public void disableTimestamping() {
+        timestamping = false;
     }
 
-
-
-
-
-
-
-
+    /**
+     * Disable legacy logging (i.e. Log.cat)
+     */
+    public void disableLegacyLogger() {
+        legacyLogger = false;
+    }
 
 
 
     /* add metadata of all types */
 
-    public void addMeta(String key, String value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, String value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Long value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, Long value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Integer value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, Integer value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Float value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, Float value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Double value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, Double value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Boolean value) {
-        extraArgs.addProperty(key, value);
+    public void addField(String key, Boolean value) {
+        extraFields.addProperty(key, value);
     }
 
-    public void addMeta(String key, Date value) {
-        extraArgs.addProperty(key, value.getTime());
+    public void addField(String key, Date value) {
+        extraFields.addProperty(key, value.getTime());
     }
 
-    public void disableTimestamping() {
-        timestamping = false;
+    public void destroy() {
+        appender.stop();
     }
-
-
-
-
-
-    private void emit(JsonObject event) {
-
-        // datetime
-        if (timestamping) {
-            event.addProperty("datetime", simpleDateFormat.format(new Date()));
-        }
-
-        String data = eventBuilder
-                .append(key)
-                .append(" ")
-                .append(event.toString()).toString();
-
-        endpoint.send(data.getBytes());
-    }
-
 }
