@@ -4,87 +4,125 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by gpolaert on 4/12/16.
- */
-public class EndpointManager extends Thread {
+import static android.os.Process.setThreadPriority;
+
+
+public class EndpointManager implements Runnable {
 
 
     private static final long MAX_INACTIVITY = 30;
-    private static final int MAX_CAPACITY = 10;
+    private static final int MAX_CAPACITY = Integer.MAX_VALUE;
     private static final long RECONNECTION_WAIT = 500; // 500 ms
-    private static final int MAX_ATTEMPT = -1;
+    private static final int MAX_ATTEMPT = 10;
     private static final long PERIODIC_QUEUE_CHECK = 1000;
-    private SSLSocketEndpoint endpoint = new SSLSocketEndpoint("api",122);
 
-    private BlockingDeque<String> queue;
-
-
-    public void start() {
+    private static BlockingDeque<String> queue;
+    private Endpoint endpoint;
+    private Thread currentThread;
 
 
-        int attempt = 0;
-
-        // connection loop
-        while (isAlive() && attempt <= MAX_ATTEMPT) {
-
-
-            endpoint.openConnection();
-
-            // sending loop
-            while (endpoint.isConnected() && isAlive()) {
+    public EndpointManager(SSLSocketEndpoint endpoint) {
+        this.endpoint = endpoint;
+        queue = new LinkedBlockingDeque(MAX_CAPACITY);
+    }
 
 
-                //read
-                try {
+    @Override
+    public void run() {
 
-                    // read the eldest event
-                    item = queue.pollFirst(MAX_INACTIVITY, TimeUnit.SECONDS);
+        try {
+            int attempt = 0;
+            String item;
+
+            // connection loop
+            while (attempt <= MAX_ATTEMPT) {
+
+                endpoint.openConnection();
+
+                // sending loop
+                while (endpoint.isConnected()) {
 
 
-                    boolean isSent = endpoint.send(item.getBytes());
-                    if (!isSent) {
+                    //read
+                    try {
 
-                        // Trying to rollback, if the deque is full, remove it because
-                        // it's the eldest element
-                        try {
-                            queue.addFirst(item);
-                        } catch (IllegalStateException e) {
+                        // read the eldest event
+                        item = queue.pollFirst(MAX_INACTIVITY, TimeUnit.SECONDS);
 
-                            Log.e(getClass().getName(), "Queue is full, removing the eldest element: " + item);
+
+                        boolean isSent = endpoint.send(item);
+                        if (!isSent) {
+
+                            // Trying to rollback, if the deque is full, remove it because
+                            // it's the eldest element
+                            try {
+                                queue.addFirst(item);
+                            } catch (IllegalStateException e) {
+
+                                e.printStackTrace();
+                                Log.e(getClass().getName(), "Queue is full, removing the eldest element: " + item);
+
+                            }
+
+                            // try to reconnect again
+                            break;
 
                         }
 
-                        // try to reconnect again
-                        break;
+                    } catch (InterruptedException e) {
 
+
+                        e.printStackTrace();
+                        Log.i(getClass().getName(), "Inactivity, closing connections");
+                        endpoint.closeConnection();
+                        while (queue.peekFirst() == null) {
+
+                            Log.i(getClass().getName(), "Queue empty, waiting " + (PERIODIC_QUEUE_CHECK / 1000) + "s before the next check ...");
+                            Thread.sleep(PERIODIC_QUEUE_CHECK);
+
+                        }
                     }
 
-                } catch (InterruptedException e) {
 
-                    Log.i(getClass().getName(), "Inactivity, closing connections");
-                    endpoint.closeConnection();
-                    while (queue.peekFirst() == null) {
-
-                        Log.i(getClass().getName(), "Queue empty, waiting " + (PERIODIC_QUEUE_CHECK / 1000) + "s before the next check ...");
-                        Thread.sleep(PERIODIC_QUEUE_CHECK);
-
-                    }
                 }
 
+                endpoint.closeConnection();
+                Thread.sleep(RECONNECTION_WAIT);
 
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.wtf(getClass().getName(), e);
+        } finally {
             endpoint.closeConnection();
-            Thread.sleep(RECONNECTION_WAIT);
-
         }
     }
 
 
     public void kill() {
 
+        while (queue.size() != 0) {
+            try {
+                System.out.println("queue size:" + queue.size());
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        currentThread.interrupt();
+
+    }
+
+    public void write(String data) {
+
+        queue.offerLast(data);
+    }
+
+    public void setCurrentThread(Thread currentThread) {
+        this.currentThread = currentThread;
     }
 }
