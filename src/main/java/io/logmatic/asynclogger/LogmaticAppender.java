@@ -4,10 +4,8 @@ import android.util.Log;
 
 import io.logmatic.asynclogger.net.EndpointManager;
 
-/**
- * Created by gpolaert on 4/12/16.
- */
-public class LogAppender {
+
+public class LogmaticAppender {
 
 
     private EndpointManager manager = null;
