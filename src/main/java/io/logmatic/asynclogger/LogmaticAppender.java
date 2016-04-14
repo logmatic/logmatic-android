@@ -2,13 +2,39 @@ package io.logmatic.asynclogger;
 
 import android.util.Log;
 
+import java.util.concurrent.BlockingDeque;
+
 import io.logmatic.asynclogger.net.EndpointManager;
+import io.logmatic.asynclogger.net.SSLSocketEndpoint;
 
 
 public class LogmaticAppender {
 
 
-    private EndpointManager manager = null;
+    private final String token;
+    private EndpointManager manager;
+    public static final String DST_HOST = "api.logmatic.io";
+    public static final int DST_PORT = 10515;
+
+    public LogmaticAppender(String token) {
+
+        this.token = token;
+        // initialize a socket to Logmatic
+        SSLSocketEndpoint endpoint = new SSLSocketEndpoint(DST_HOST, DST_PORT);
+        manager = new EndpointManager(endpoint);
+        start();
+
+
+    }
+
+
+    public LogmaticAppender(String token, EndpointManager manager) {
+
+        this.token = token;
+        this.manager = manager;
+
+
+    }
 
 
     public final void start() {
@@ -17,7 +43,10 @@ public class LogmaticAppender {
         }
 
         if (manager != null) {
-            manager.start();
+            Thread thread = new Thread(manager);
+            manager.setCurrentThread(thread);
+            thread.start();
+
         }
 
     }
@@ -31,7 +60,9 @@ public class LogmaticAppender {
 
     public void append(String data) {
 
-        manager.write(data);
+        // prefix all events by token
+        manager.write(token + " " + data);
+
     }
 
 
