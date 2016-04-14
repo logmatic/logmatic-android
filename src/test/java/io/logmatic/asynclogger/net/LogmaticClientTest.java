@@ -1,5 +1,6 @@
 package io.logmatic.asynclogger.net;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -12,36 +13,28 @@ import java.util.Date;
 import java.util.List;
 
 import io.logmatic.asynclogger.Logmatic;
+import io.logmatic.asynclogger.LogmaticAppender;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LogmaticClientTest {
 
 
+
+    String apiKey = "fake_key";
+
     @Mock
-    SSLSocketEndpoint endpoint;
+    EndpointManager manager;
+    LogmaticAppender appender;
 
-
-    final String apiKey = "fake_key";
-
-
-    @Test
-    public void testShouldOpenAConnectionToLogmatic() {
-
-        // mock stuff
-        when(endpoint.isConnected()).thenReturn(true);
-
-        // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, endpoint);
-
-        // THEN the endpoint should have received the event
-        assertThat(client.isConnected(), is(true));
-        assertThat(client.getAPIKey(), is(apiKey));
+    @Before
+    public void setUp(){
+        appender = new LogmaticAppender(apiKey, manager);
 
     }
 
@@ -51,13 +44,14 @@ public class LogmaticClientTest {
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, appender);
+
 
         // WHEN messages are logged
-        client.log("message one");
+        client.d("message one");
 
-        //THEN they arrived to the endpoint
-        verify(endpoint).send(any(byte[].class));
+        //THEN they arrived to the manager
+        verify(manager).write(anyString());
 
 
     }
@@ -66,25 +60,24 @@ public class LogmaticClientTest {
     public void messageShouldBeLogInJson() throws IOException {
 
 
-        ArgumentCaptor<byte[]> data = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<String> data = ArgumentCaptor.forClass(String.class);
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN messages are logged
-        client.log("message one");
+        client.d("message one");
 
 
-        //THEN messages must be arrived to the endpoint
-        verify(endpoint).send(data.capture());
+        //THEN messages must be arrived to the manager
+        verify(manager).write(data.capture());
 
 
         String expected = apiKey + " {\"message\":\"message one\"}";
-        String output = new String(data.getValue());
 
-        assertThat(output, is(expected));
+        assertThat(data.getValue(), is(expected));
 
 
     }
@@ -94,33 +87,32 @@ public class LogmaticClientTest {
     public void shouldAddMeta() throws IOException {
 
 
-        ArgumentCaptor<byte[]> data = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<String> data = ArgumentCaptor.forClass(String.class);
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN metas are added
-        client.addMeta("long", 123L);
-        client.addMeta("double", 1.0);
-        client.addMeta("string", "string");
-        client.addMeta("int", 1);
-        client.addMeta("float", 2.0);
-        client.addMeta("string", "string");
-        client.addMeta("date", new Date(1460041488000L));
-        client.log("message one");
+        client.addField("long", 123L);
+        client.addField("double", 1.0);
+        client.addField("string", "string");
+        client.addField("int", 1);
+        client.addField("float", 2.0);
+        client.addField("string", "string");
+        client.addField("date", new Date(1460041488000L));
+        client.d("message one");
 
 
-        //THEN messages must be arrived to the endpoint
-        verify(endpoint).send(data.capture());
+        //THEN messages must be arrived to the manager
+        verify(manager).write(data.capture());
 
 
         String expected = apiKey + " {\"long\":123,\"double\":1.0,\"string\":\"string\",\"int\":1,\"float\":2.0,\"date\":1460041488000,\"message\":\"message one\"}";
-        String output = new String(data.getValue());
 
 
-        assertThat(output, is(expected));
+        assertThat(data.getValue(), is(expected));
 
 
     }
@@ -130,25 +122,23 @@ public class LogmaticClientTest {
     public void souldLogAJavaObjectAsMessage() {
 
 
-        ArgumentCaptor<byte[]> data = ArgumentCaptor.forClass(byte[].class);
+        ArgumentCaptor<String> data = ArgumentCaptor.forClass(String.class);
 
 
         // GIVEN a connection to Logmatic
-        Logmatic client = new Logmatic(apiKey, endpoint);
+        Logmatic client = new Logmatic(apiKey, appender);
         client.disableTimestamping();
 
         // WHEN messages are logged
-        client.log(new AnonymousObject());
+        client.d(new AnonymousObject().getAString());
 
 
-        //THEN messages must be arrived to the endpoint
-        verify(endpoint).send(data.capture());
+        //THEN messages must be arrived to the manager
+        verify(manager).write(data.capture());
 
         String expected = apiKey + " {\"message\":{\"a_string\":\"string\",\"a_double\":1.0,\"an_array_of_strings\":[\"string_one\",\"string_two\"]}}";
-        String output = new String(data.getValue());
 
-
-        assertThat(output, is(expected));
+        assertThat(data.getValue(), is(expected));
 
     }
 
