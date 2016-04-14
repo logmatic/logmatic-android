@@ -2,18 +2,18 @@ package io.logmatic.asynclogger.net;
 
 import android.util.Log;
 
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
 
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 
-public class SSLSocketEndpoint {
+public class SSLSocketEndpoint implements Endpoint {
 
     private SSLSocket sslSocket;
-    private OutputStream stream;
+    private DataOutputStream stream;
     private final String hostname;
     private final Integer port;
 
@@ -34,12 +34,13 @@ public class SSLSocketEndpoint {
     }
 
 
-    public boolean send(byte[] data) {
+    @Override
+    public boolean send(String data) {
 
         if (!isConnected()) return false;
 
         try {
-            stream.write(data);
+            stream.writeBytes(data + '\n');
             stream.flush();
             return true;
 
@@ -50,11 +51,13 @@ public class SSLSocketEndpoint {
         return false;
     }
 
+    @Override
     public boolean isConnected() {
         return sslSocket.isConnected();
     }
 
 
+    @Override
     public void closeConnection() {
 
         try {
@@ -68,6 +71,7 @@ public class SSLSocketEndpoint {
 
     }
 
+    @Override
     public boolean openConnection() {
 
 
@@ -79,10 +83,12 @@ public class SSLSocketEndpoint {
                 sslSocket = (SSLSocket) sslFactory.createSocket(socket, hostname, port, true);
             }
 
-            stream = sslSocket.getOutputStream();
+            stream = new DataOutputStream(sslSocket.getOutputStream());
             return true;
 
         } catch (IOException e) {
+
+            e.printStackTrace();
             Log.e(getClass().getName(), "Failed to open socket", e);
         }
         return false;
