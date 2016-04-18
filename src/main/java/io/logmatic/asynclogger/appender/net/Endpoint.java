@@ -1,9 +1,10 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 /**
  * Created by gpolaert on 4/14/16.
  */
 public interface Endpoint {
+
 
     boolean isBulkable();
 

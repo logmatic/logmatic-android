@@ -12,135 +12,97 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import io.logmatic.asynclogger.appender.Appender;
+import io.logmatic.asynclogger.appender.LogmaticAppender;
+
 public class Logger {
 
 
-    /* formaters and tools */
-    private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
-    private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
-    private static final Gson gson = new GsonBuilder()
-            .serializeNulls()
-            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-            .create();
-
-
-    private final String name = null;
-    private final String token;
-    final Appender appender;
-
+    private final static String TAG_NAME = Logger.class.getSimpleName();
+    private final Appender appender;
     private JsonObject extraFields = new JsonObject();
     private boolean timestamping = true;
-    private boolean legacyLogger = true;
-    private boolean deviceIdentification = true;
+    private boolean legacyLogging = true;
 
 
-    public Logger(String yourLogmaticKey) {
+    public Logger(String yourLogmaticKey, Appender appender, boolean timestamping, boolean legacyLogging) {
 
-        this.token = yourLogmaticKey;
-        this.appender = new LogmaticAppender(token);
-
-    }
-
-    public Logger(String yourLogmaticKey, Appender appender) {
-
-        this.token = yourLogmaticKey;
-        this.appender = appender;
-
-
+        this.appender = (appender == null) ? new LogmaticAppender(yourLogmaticKey) : appender;
+        this.timestamping = timestamping;
+        this.legacyLogging = legacyLogging;
     }
 
 
     public void v(String message) {
-        log(Log.VERBOSE, getClass().getName(), message);
+        internalLog(Log.VERBOSE, TAG_NAME, message);
     }
 
     public void v(String tag, String message) {
-        log(Log.VERBOSE, tag, message);
+        internalLog(Log.VERBOSE, tag, message);
     }
 
     public void v(String tag, String message, Throwable tr) {
-        log(Log.VERBOSE, tag, message, tr);
+        internalLog(Log.VERBOSE, tag, message, tr);
     }
 
     public void d(String message) {
-        log(Log.DEBUG, getClass().getName(), message);
+        internalLog(Log.DEBUG, TAG_NAME, message);
     }
 
     public void d(String tag, String message) {
-        log(Log.DEBUG, tag, message);
+        internalLog(Log.DEBUG, tag, message);
     }
 
     public void d(String tag, String message, Throwable tr) {
-        log(Log.DEBUG, tag, message, tr);
+        internalLog(Log.DEBUG, tag, message, tr);
     }
 
     public void i(String message) {
-        log(Log.INFO, getClass().getName(), message);
+        internalLog(Log.INFO, TAG_NAME, message);
     }
 
     public void i(String tag, String message) {
-        log(Log.INFO, tag, message);
+        internalLog(Log.INFO, tag, message);
     }
 
     public void i(String tag, String message, Throwable tr) {
-        log(Log.INFO, tag, message, tr);
+        internalLog(Log.INFO, tag, message, tr);
     }
 
     public void e(String message) {
-        log(Log.ERROR, getClass().getName(), message);
+        internalLog(Log.ERROR, TAG_NAME, message);
     }
 
     public void e(String tag, String message) {
-        log(Log.ERROR, tag, message);
+        internalLog(Log.ERROR, tag, message);
     }
 
     public void e(String tag, String message, Throwable tr) {
-        log(Log.ERROR, tag, message, tr);
+        internalLog(Log.ERROR, tag, message, tr);
     }
 
     public void w(String message) {
-        log(Log.DEBUG, getClass().getName(), message);
+        internalLog(Log.DEBUG, TAG_NAME, message);
     }
 
     public void w(String tag, String message) {
-        log(Log.DEBUG, tag, message);
+        internalLog(Log.DEBUG, tag, message);
     }
 
     public void w(String tag, String message, Throwable tr) {
-        log(Log.DEBUG, tag, message, tr);
-    }
-
-    public void wtf(String message) {
-        if (legacyLogger) {
-            Log.wtf(getClass().getName(), message);
-        }
-        log(Log.ERROR, getClass().getName(), message);
-    }
-
-    public void wtf(String tag, String message) {
-        if (legacyLogger) {
-            Log.wtf(tag, message);
-        }
-        log(Log.ERROR, tag, message);
-    }
-
-    public void wtf(String tag, String message, Throwable tr) {
-        if (legacyLogger) {
-            Log.wtf(tag, message, tr);
-        }
-        log(Log.ERROR, tag, message, tr);
+        internalLog(Log.DEBUG, tag, message, tr);
     }
 
 
-    private void log(int level, String tag, String message, Throwable tr) {
-        log(level, tag, message + '\n' + Log.getStackTraceString(tr));
+    private void internalLog(int level, String tag, String message, Throwable tr) {
+        internalLog(level, tag, message + '\n' + Log.getStackTraceString(tr));
 
     }
 
 
-    private void log(int level, String tag, String message) {
+    private void internalLog(int level, String tag, String message) {
 
-        if (legacyLogger) {
+        if (legacyLogging) {
             Log.println(level, tag, message);
         }
 
@@ -158,25 +120,6 @@ public class Logger {
 
 
     }
-
-
-    /**
-     * Disable  auto-timestamping of events
-     */
-    public void disableTimestamping() {
-        timestamping = false;
-    }
-
-    /**
-     * Disable legacy logging (i.e. Log.cat)
-     */
-    public void disableLegacyLogger() {
-        legacyLogger = false;
-    }
-
-
-
-    /* add metadata of all types */
 
     public void addField(String key, String value) {
         extraFields.addProperty(key, value);
@@ -206,7 +149,20 @@ public class Logger {
         extraFields.addProperty(key, value.getTime());
     }
 
-    public void destroy() {
-        appender.stop();
+
+
+    /* formaters and tools */
+    private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+    private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
+    private static final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
+
+
+
+
+    public Appender getAppender() {
+        return appender;
     }
 }

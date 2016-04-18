@@ -6,14 +6,18 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <receiver android:name=".NetworkChangeReceiver" >
+        <receiver android:name=".appender.net.NetworkChangeReceiver" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />
             </intent-filter>
         </receiver>
 
+
     </application>
+
+
+    <!-- android:exported="false" -->
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

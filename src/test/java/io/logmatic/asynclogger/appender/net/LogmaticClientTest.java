@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.logmatic.asynclogger.Logger;
-import io.logmatic.asynclogger.LogmaticAppender;
+import io.logmatic.asynclogger.appender.LogmaticAppender;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

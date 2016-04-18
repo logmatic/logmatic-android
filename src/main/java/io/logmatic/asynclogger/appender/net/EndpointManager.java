@@ -1,9 +1,8 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import android.util.Log;
 
 import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 
@@ -15,41 +14,45 @@ public class EndpointManager implements Runnable {
     private static final long RECONNECTION_WAIT = 500; // 500 ms
     private static final int MAX_ATTEMPT = 10;
     private static final long PERIODIC_QUEUE_CHECK = 1000;
+    private final BlockingDeque<String> queue;
 
-    private static BlockingDeque<String> queue;
     private Endpoint endpoint;
     private Thread currentThread;
-    private boolean networkStatus;
+    private boolean networkStatus = true;
 
 
-    public EndpointManager(SSLSocketEndpoint endpoint) {
+    public EndpointManager(Endpoint endpoint, BlockingDeque<String> queue) {
         this.endpoint = endpoint;
-        queue = new LinkedBlockingDeque(MAX_CAPACITY);
+        this.queue = queue;
     }
 
 
     @Override
     public void run() {
 
+
+        // while the network `networkStatus` is available
+        // bulk all messages and send it to the endpoint
+        // if it's failed, retry until MAX_ATTEMPT
+
         try {
+
             int attempt = 0;
-            String item;
 
-            // connection loop
-            while (attempt <= MAX_ATTEMPT) {
 
+            while (attempt <= MAX_ATTEMPT && networkStatus) {
+
+
+                // Open a connection to the endpoint
                 endpoint.openConnection();
 
-                // sending loop
-                while (endpoint.isConnected()) {
+                if (endpoint.isConnected()) {
 
 
-                    //read
                     try {
 
                         // read the eldest event
                         item = queue.pollFirst(MAX_INACTIVITY, TimeUnit.SECONDS);
-
 
 
                         boolean isSent = endpoint.send(item);
@@ -58,7 +61,9 @@ public class EndpointManager implements Runnable {
                             // Trying to rollback, if the deque is full, remove it because
                             // it's the eldest element
                             try {
+
                                 queue.addFirst(item);
+
                             } catch (IllegalStateException e) {
 
                                 e.printStackTrace();
@@ -93,16 +98,21 @@ public class EndpointManager implements Runnable {
 
             }
 
+            // the network device is not available, waiting ...
+            if (networkStatus == false) Thread.sleep(10000);
+
+
         } catch (Exception e) {
             e.printStackTrace();
             Log.wtf(getClass().getName(), e);
         } finally {
             endpoint.closeConnection();
         }
+
     }
 
 
-    public void kill() {
+    public void shutdown() {
 
         while (queue.size() != 0) {
             try {
@@ -127,5 +137,10 @@ public class EndpointManager implements Runnable {
 
     public void setNetworkStatus(boolean networkStatus) {
         this.networkStatus = networkStatus;
+    }
+
+    public void handle() {
+
+
     }
 }

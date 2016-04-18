@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -19,7 +19,6 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
         LoggerRegistry.updateNetworkStatus(isOnline(context));
 
     }
-
 
     public boolean isOnline(Context context) {
 

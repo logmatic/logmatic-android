@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import android.util.Log;
 
@@ -10,14 +10,14 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 
-public class SSLSocketEndpoint implements Endpoint {
+public class SecureTCPEndpoint implements Endpoint {
 
     private SSLSocket sslSocket;
     private DataOutputStream stream;
     private final String hostname;
     private final Integer port;
 
-    public SSLSocketEndpoint(String hostname, Integer port) {
+    public SecureTCPEndpoint(String hostname, Integer port) {
         this.port = port;
         this.hostname = hostname;
         this.sslSocket = null;
@@ -25,7 +25,7 @@ public class SSLSocketEndpoint implements Endpoint {
         openConnection();
     }
 
-    public SSLSocketEndpoint(SSLSocket socket) {
+    public SecureTCPEndpoint(SSLSocket socket) {
         this.port = null;
         this.hostname = null;
         this.sslSocket = socket;
@@ -45,7 +45,7 @@ public class SSLSocketEndpoint implements Endpoint {
         if (!isConnected()) return false;
 
         try {
-            stream.writeBytes(data + '\n');
+            stream.write((data + '\n').getBytes());
             return true;
 
         } catch (IOException e) {
@@ -66,11 +66,12 @@ public class SSLSocketEndpoint implements Endpoint {
 
         try {
             stream.flush();
+            stream.close();
             sslSocket.close();
         } catch (IOException e) {
-            Log.e(getClass().getName(), "Connection close failed", e);
+            Log.e(getClass().getName(), "Connection shutdown failed", e);
         } catch (NullPointerException ne) {
-            Log.v(getClass().getName(), "Connection close failed, no previous connection have been open");
+            Log.v(getClass().getName(), "Connection shutdown failed, no previous connection have been open");
         }
 
     }

@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +30,7 @@ public class SSLSocketEndpointTest {
         OutputStream fakeStream = mock(OutputStream.class);
         when(fakeSocket.getOutputStream()).thenReturn(fakeStream);
 
-        SSLSocketEndpoint endpoint = new SSLSocketEndpoint(fakeSocket);
+        SecureTCPEndpoint endpoint = new SecureTCPEndpoint(fakeSocket);
 
         // GIVEN a not connected socket
         when(fakeSocket.isConnected()).thenReturn(true);
@@ -56,7 +56,7 @@ public class SSLSocketEndpointTest {
         OutputStream fakeStream = mock(OutputStream.class);
         when(fakeSocket.getOutputStream()).thenReturn(fakeStream);
 
-        SSLSocketEndpoint endpoint = spy(new SSLSocketEndpoint(fakeSocket));
+        SecureTCPEndpoint endpoint = spy(new SecureTCPEndpoint(fakeSocket));
 
 
         // GIVEN a disconnected manager

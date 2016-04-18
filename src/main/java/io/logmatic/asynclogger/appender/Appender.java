@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger;
+package io.logmatic.asynclogger.appender;
 
 /**
  * Created by gpolaert on 4/14/16.

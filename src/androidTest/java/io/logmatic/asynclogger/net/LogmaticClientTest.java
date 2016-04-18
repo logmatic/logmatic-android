@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.net;
+package io.logmatic.asynclogger.appender.net;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -22,7 +22,7 @@ public class LogmaticClientTest {
 
 
     @Mock
-    SSLSocketEndpoint endpoint;
+    SecureTCPEndpoint endpoint;
 
 
     final String apiKey = "fake_key";

@@ -1,28 +1,31 @@
 package io.logmatic.asynclogger;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
- * Created by gpolaert on 4/14/16.
+ * A collection of all logger references
  */
 public class LoggerRegistry {
 
-    private static LinkedList<Logger> loggers = new LinkedList();
+    private static List<Logger> loggers = new LinkedList();
 
+
+    /**
+     * Broadcast the network status to all loggers
+     *
+     * @param isConnected True if the network is available
+     */
     public static void updateNetworkStatus(boolean isConnected) {
-
-
         for (Logger logger : loggers) {
-
-            logger.appender.updateNetworkStatus(isConnected);
-
+            logger.getAppender().updateNetworkStatus(isConnected);
         }
-
-
     }
 
-
-    public static void register(Logger l) {
-        loggers.add(l);
+    /**
+     * Store the logger reference
+     **/
+    public static void register(Logger logger) {
+        loggers.add(logger);
     }
 }
