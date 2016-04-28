@@ -1,7 +1,5 @@
 package io.logmatic.asynclogger;
 
-import io.logmatic.asynclogger.appender.Appender;
-
 /**
  * Utility class for Logger building
  */
@@ -9,7 +7,7 @@ public class LoggerBuilder {
 
 
     private String token;
-    private Appender appender;
+    private LogmaticAppender appender;
     private boolean timestamping = true;
     private boolean legacyLogging = true;
 
@@ -19,7 +17,7 @@ public class LoggerBuilder {
         return this;
     }
 
-    public LoggerBuilder setCustomAppender(Appender appender) {
+    public LoggerBuilder setCustomAppender(LogmaticAppender appender) {
         this.appender = appender;
         return this;
     }
@@ -36,7 +34,13 @@ public class LoggerBuilder {
 
 
     public Logger build() {
-        Logger l = new Logger(token, appender, timestamping, legacyLogging);
+
+        if(appender == null) {
+            // Create a new appender, use generic options
+            appender = new LogmaticAppender(token, null);
+        }
+
+        Logger l = new Logger(appender, timestamping, legacyLogging);
         LoggerRegistry.register(l);
         return l;
 

@@ -10,6 +10,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 
+import io.logmatic.asynclogger.endpoint.SecureTCPEndpoint;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;

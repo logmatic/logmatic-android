@@ -12,22 +12,19 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import io.logmatic.asynclogger.appender.Appender;
-import io.logmatic.asynclogger.appender.LogmaticAppender;
-
 public class Logger {
 
 
     private final static String TAG_NAME = Logger.class.getSimpleName();
-    private final Appender appender;
+    private final LogmaticAppender appender;
     private JsonObject extraFields = new JsonObject();
     private boolean timestamping = true;
     private boolean legacyLogging = true;
 
 
-    public Logger(String yourLogmaticKey, Appender appender, boolean timestamping, boolean legacyLogging) {
+    public Logger(LogmaticAppender appender, boolean timestamping, boolean legacyLogging) {
 
-        this.appender = (appender == null) ? new LogmaticAppender(yourLogmaticKey) : appender;
+        this.appender = appender;
         this.timestamping = timestamping;
         this.legacyLogging = legacyLogging;
     }
@@ -162,7 +159,7 @@ public class Logger {
 
 
 
-    public Appender getAppender() {
+    public LogmaticAppender getAppender() {
         return appender;
     }
 }

@@ -1,29 +1,16 @@
 package io.logmatic.asynclogger.appender.net;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import io.logmatic.asynclogger.Logger;
-import io.logmatic.asynclogger.appender.LogmaticAppender;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.verify;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LogmaticClientTest {
-
+/*
 
 
     String apiKey = "fake_key";
@@ -159,6 +146,6 @@ public class LogmaticClientTest {
         public List<String> getAnArrayOfStrings() {
             return anArrayOfStrings;
         }
-    }
+    }*/
 
 }

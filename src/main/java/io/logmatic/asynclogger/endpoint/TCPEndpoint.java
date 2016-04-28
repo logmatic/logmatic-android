@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.appender.net;
+package io.logmatic.asynclogger.endpoint;
 
 import android.util.Log;
 
@@ -6,33 +6,21 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
+public class TCPEndpoint implements Endpoint {
 
-public class SecureTCPEndpoint implements Endpoint {
-
-    private SSLSocket sslSocket;
+    private Socket socket;
     private DataOutputStream stream;
     private final String hostname;
     private final Integer port;
 
-    public SecureTCPEndpoint(String hostname, Integer port) {
+    public TCPEndpoint(String hostname, Integer port) {
         this.port = port;
         this.hostname = hostname;
-        this.sslSocket = null;
+        this.socket = null;
 
         openConnection();
     }
-
-    public SecureTCPEndpoint(SSLSocket socket) {
-        this.port = null;
-        this.hostname = null;
-        this.sslSocket = socket;
-
-        openConnection();
-    }
-
 
     @Override
     public boolean isBulkable() {
@@ -57,7 +45,7 @@ public class SecureTCPEndpoint implements Endpoint {
 
     @Override
     public boolean isConnected() {
-        return sslSocket.isConnected();
+        return socket.isConnected();
     }
 
 
@@ -67,7 +55,7 @@ public class SecureTCPEndpoint implements Endpoint {
         try {
             stream.flush();
             stream.close();
-            sslSocket.close();
+            socket.close();
         } catch (IOException e) {
             Log.e(getClass().getName(), "Connection shutdown failed", e);
         } catch (NullPointerException ne) {
@@ -82,13 +70,11 @@ public class SecureTCPEndpoint implements Endpoint {
 
         try {
 
-            if (sslSocket == null) {
-                Socket socket = new Socket(hostname, port);
-                SSLSocketFactory sslFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                sslSocket = (SSLSocket) sslFactory.createSocket(socket, hostname, port, true);
+            if (socket == null || socket.isClosed()) {
+                socket = new Socket(hostname, port);
             }
 
-            stream = new DataOutputStream(sslSocket.getOutputStream());
+            stream = new DataOutputStream(socket.getOutputStream());
             return true;
 
         } catch (IOException e) {

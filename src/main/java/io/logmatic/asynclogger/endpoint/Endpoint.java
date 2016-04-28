@@ -1,7 +1,7 @@
-package io.logmatic.asynclogger.appender.net;
+package io.logmatic.asynclogger.endpoint;
 
 /**
- * Created by gpolaert on 4/14/16.
+ * Endpoints are a type of connections to Logmatic
  */
 public interface Endpoint {
 

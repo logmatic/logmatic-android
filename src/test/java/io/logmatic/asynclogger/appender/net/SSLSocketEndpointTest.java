@@ -9,6 +9,8 @@ import java.io.OutputStream;
 
 import javax.net.ssl.SSLSocket;
 
+import io.logmatic.asynclogger.endpoint.SecureTCPEndpoint;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
