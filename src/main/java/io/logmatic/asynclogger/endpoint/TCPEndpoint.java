@@ -19,7 +19,6 @@ public class TCPEndpoint implements Endpoint {
         this.hostname = hostname;
         this.socket = null;
 
-        openConnection();
     }
 
     @Override

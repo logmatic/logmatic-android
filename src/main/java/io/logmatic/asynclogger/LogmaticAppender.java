@@ -1,19 +1,21 @@
 package io.logmatic.asynclogger;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import android.util.Log;
+
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import io.logmatic.asynclogger.endpoint.Endpoint;
 import io.logmatic.asynclogger.endpoint.SecureTCPEndpoint;
+import io.logmatic.asynclogger.endpoint.TCPEndpoint;
 
 
 public class LogmaticAppender {
 
-    private static final int MAX_EVENTS_PER_BULK = 1000;
-    private static final long MAX_BYTES_PER_BULK = 1024 * 100; // 100KB
+    private static final String TAG = "Logmatic";
+    private static final long FREQUENCY = 30;
     /* Customer API token */
     private final String token;
 
@@ -22,7 +24,8 @@ public class LogmaticAppender {
 
     /* Constants props */
     private static final String DST_HOST = "api.logmatic.io";
-    private static final int DST_PORT = 10515;
+    private static final int DST_PORT = 10514;
+    private static final int SSL_DST_PORT = 10515;
 
     /* Internal manager to handle the Logmatic connection  */
     private EndpointManager manager;
@@ -31,14 +34,16 @@ public class LogmaticAppender {
     ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
     /* The events queue */
-    private Queue<String> cache = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedDeque<String> cache = new ConcurrentLinkedDeque<>();
 
 
     public LogmaticAppender(String token, EndpointManager manager) {
 
         if (manager == null) {
-            Endpoint endpoint = new SecureTCPEndpoint(DST_HOST, DST_PORT);
-            this.manager = new EndpointManager(endpoint);
+            //
+            // Endpoint endpoint1 = new SecureTCPEndpoint(DST_HOST, SSL_DST_PORT);
+            Endpoint endpoint2 = new TCPEndpoint(DST_HOST, DST_PORT);
+            this.manager = new EndpointManager(endpoint2);
         }
 
         this.token = token;
@@ -51,7 +56,6 @@ public class LogmaticAppender {
      * Start the scheduler, and a periodic task
      */
     public final void start() {
-
         // Periodic callback for sending logs
         Runnable periodicCronTask = new Runnable() {
             @Override
@@ -63,7 +67,7 @@ public class LogmaticAppender {
         // Start the initial runnable task by posting through the handler
         //scheduler.scheduleAtFixedRate(periodicCronTask, 0, 2, TimeUnit.MINUTES);
 
-        scheduler.scheduleAtFixedRate(periodicCronTask, 0, 10, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(periodicCronTask, 0, FREQUENCY, TimeUnit.SECONDS);
 
     }
 
@@ -87,44 +91,20 @@ public class LogmaticAppender {
      */
     public void tick() {
 
-        // do nothing if we don't have a connection
-        if (!isConnected) return;
 
+        Log.v(TAG, "New tick event");
+        // do nothing if we don't have a connection or the cache is empty
+        if (!isConnected || cache.isEmpty()) return;
 
-        int numberOfEventsCached = cache.size();
-        int numberOfEventsSent = 0;
-
-        System.out.println("tick");
-
-
-        while (numberOfEventsSent < numberOfEventsCached) {
-
-            // bulk events
-            StringBuilder bulk = new StringBuilder();
-            int numberOfEvents = 0;
-
-            while (numberOfEvents < MAX_EVENTS_PER_BULK && bulk.length() < MAX_BYTES_PER_BULK) {
-                String element = cache.poll();
-                if (element == null) break; // empty queues
-                numberOfEvents++;
-                bulk.append(element);
-            }
-
-            // send them
-            if (numberOfEvents != 0) {
-                System.out.println(numberOfEvents);
-                manager.handle(bulk.toString());
-            }
-
-            numberOfEventsSent += numberOfEvents;
-            System.out.println(numberOfEventsSent);
-        }
-
+        Log.d(TAG, "Start a new async task to send events to Logmation.io");
+        manager.doInBackground(cache);
 
     }
 
 
     public void updateNetworkStatus(boolean isConnected) {
+
+        Log.d(TAG, "Network status changed, isConnected: " + isConnected);
         this.isConnected = isConnected;
     }
 }

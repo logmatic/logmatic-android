@@ -1,5 +1,6 @@
 package io.logmatic.asynclogger.endpoint;
 
+import android.os.StrictMode;
 import android.util.Log;
 
 import java.io.DataOutputStream;
@@ -22,15 +23,12 @@ public class SecureTCPEndpoint implements Endpoint {
         this.hostname = hostname;
         this.sslSocket = null;
 
-        openConnection();
     }
 
     public SecureTCPEndpoint(SSLSocket socket) {
         this.port = null;
         this.hostname = null;
         this.sslSocket = socket;
-
-        openConnection();
     }
 
 

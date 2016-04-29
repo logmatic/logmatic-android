@@ -15,7 +15,7 @@ import java.util.Locale;
 public class Logger {
 
 
-    private final static String TAG_NAME = Logger.class.getSimpleName();
+    private final static String TAG_NAME = Logger.class.getSimpleName() + "-android".toLowerCase();
     private final LogmaticAppender appender;
     private JsonObject extraFields = new JsonObject();
     private boolean timestamping = true;
@@ -101,12 +101,14 @@ public class Logger {
 
         if (legacyLogging) {
             Log.println(level, tag, message);
+
         }
 
         // compile extra fields
         JsonObject event = extraFields.getAsJsonObject();
         event.addProperty("message", message);
-
+        event.addProperty("level", getLevelAsString(level));
+        event.addProperty("appname", tag);
 
         // add datetime field
         if (timestamping) {
@@ -116,6 +118,18 @@ public class Logger {
         appender.append(gson.toJson(event));
 
 
+    }
+
+    private String getLevelAsString(int level) {
+
+        switch (level) {
+            case Log.ERROR: return "ERROR";
+            case Log.WARN: return "WARN";
+            case Log.INFO: return "INFO";
+            case Log.DEBUG: return "DEBUG";
+            case Log.VERBOSE: return "TRACE";
+            default: return "DEBUG";
+        }
     }
 
     public void addField(String key, String value) {
@@ -147,7 +161,6 @@ public class Logger {
     }
 
 
-
     /* formaters and tools */
     private static final String ISO_8601 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
     private final static SimpleDateFormat simpleDateFormat = new SimpleDateFormat(ISO_8601, Locale.US);
@@ -155,7 +168,6 @@ public class Logger {
             .serializeNulls()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .create();
-
 
 
 
