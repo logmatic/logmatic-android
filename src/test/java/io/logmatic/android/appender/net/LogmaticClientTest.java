@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.appender.net;
+package io.logmatic.android.appender.net;
 
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;

@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.endpoint;
+package io.logmatic.android.endpoint;
 
 import android.util.Log;
 
@@ -6,7 +6,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-
+/**
+ * Provides a TCP connection to Logmatic.io
+ */
 public class TCPEndpoint implements Endpoint {
 
     private Socket socket;
@@ -22,17 +24,12 @@ public class TCPEndpoint implements Endpoint {
     }
 
     @Override
-    public boolean isBulkable() {
-        return false;
-    }
-
-    @Override
     public boolean send(String data) {
 
         if (!isConnected()) return false;
 
         try {
-            stream.write((data + '\n').getBytes());
+            stream.write(data.getBytes());
             return true;
 
         } catch (IOException e) {
@@ -40,6 +37,16 @@ public class TCPEndpoint implements Endpoint {
 
         }
         return false;
+    }
+
+    @Override
+    public boolean flush() {
+        try {
+            stream.flush();
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
     }
 
     @Override

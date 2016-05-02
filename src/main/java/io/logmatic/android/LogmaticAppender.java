@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger;
+package io.logmatic.android;
 
 import android.util.Log;
 
@@ -7,15 +7,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import io.logmatic.asynclogger.endpoint.Endpoint;
-import io.logmatic.asynclogger.endpoint.SecureTCPEndpoint;
-import io.logmatic.asynclogger.endpoint.TCPEndpoint;
+import io.logmatic.android.endpoint.Endpoint;
+import io.logmatic.android.endpoint.SecureTCPEndpoint;
 
 
 public class LogmaticAppender {
 
     private static final String TAG = "Logmatic";
-    private static final long FREQUENCY = 30;
+    private static final long IDLE_TIME_SECONDS = 60;
     /* Customer API token */
     private final String token;
 
@@ -24,7 +23,6 @@ public class LogmaticAppender {
 
     /* Constants props */
     private static final String DST_HOST = "api.logmatic.io";
-    private static final int DST_PORT = 10514;
     private static final int SSL_DST_PORT = 10515;
 
     /* Internal manager to handle the Logmatic connection  */
@@ -39,11 +37,14 @@ public class LogmaticAppender {
 
     public LogmaticAppender(String token, EndpointManager manager) {
 
+        // Set the network state
+        // FIXME: Find a way to set the default network, without any connect.
+
+        Log.i(getClass().getSimpleName(), "Network state initialization, isConnected: " + isConnected);
+
         if (manager == null) {
-            //
-            // Endpoint endpoint1 = new SecureTCPEndpoint(DST_HOST, SSL_DST_PORT);
-            Endpoint endpoint2 = new TCPEndpoint(DST_HOST, DST_PORT);
-            this.manager = new EndpointManager(endpoint2);
+            Endpoint endpoint = new SecureTCPEndpoint(DST_HOST, SSL_DST_PORT);
+            this.manager = new EndpointManager(endpoint);
         }
 
         this.token = token;
@@ -64,16 +65,13 @@ public class LogmaticAppender {
             }
         };
 
-        // Start the initial runnable task by posting through the handler
-        //scheduler.scheduleAtFixedRate(periodicCronTask, 0, 2, TimeUnit.MINUTES);
-
-        scheduler.scheduleAtFixedRate(periodicCronTask, 0, FREQUENCY, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(periodicCronTask, 0, IDLE_TIME_SECONDS, TimeUnit.SECONDS);
 
     }
 
 
     public final void stop() {
-        //todo add a better stop handler
+        //FIXME: add a better stop handler
         tick();
         scheduler.shutdownNow();
         manager.shutdown();
@@ -91,8 +89,8 @@ public class LogmaticAppender {
      */
     public void tick() {
 
+        Log.v(TAG, "cron - tick()");
 
-        Log.v(TAG, "New tick event");
         // do nothing if we don't have a connection or the cache is empty
         if (!isConnected || cache.isEmpty()) return;
 
@@ -107,4 +105,5 @@ public class LogmaticAppender {
         Log.d(TAG, "Network status changed, isConnected: " + isConnected);
         this.isConnected = isConnected;
     }
+
 }

@@ -1,14 +1,13 @@
-package io.logmatic.asynclogger.endpoint;
+package io.logmatic.android.endpoint;
 
 /**
- * Endpoints are a type of connections to Logmatic
+ * Endpoints are the way to connect to Logmatic
  */
 public interface Endpoint {
 
-
-    boolean isBulkable();
-
     boolean send(String data);
+
+    boolean flush();
 
     boolean isConnected();
 

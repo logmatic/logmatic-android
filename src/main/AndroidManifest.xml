@@ -10,7 +10,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <receiver android:name=".NetworkChangeReceiver" >
+        <receiver android:name="io.logmatic.android.NetworkChangeReceiver" >
             <intent-filter>
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
                 <action android:name="android.net.wifi.WIFI_STATE_CHANGED" />

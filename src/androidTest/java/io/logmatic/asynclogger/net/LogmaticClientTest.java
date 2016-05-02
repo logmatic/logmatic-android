@@ -1,4 +1,4 @@
-package io.logmatic.asynclogger.appender.net;
+package io.logmatic.android.appender.net;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -10,7 +10,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
 
-import io.logmatic.asynclogger.endpoint.SecureTCPEndpoint;
+import io.logmatic.android.endpoint.SecureTCPEndpoint;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

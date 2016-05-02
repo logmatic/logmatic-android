@@ -1,40 +1,36 @@
-package io.logmatic.asynclogger;
+package io.logmatic.android;
 
 import android.os.AsyncTask;
 import android.util.Log;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.TimeUnit;
 
-import io.logmatic.asynclogger.endpoint.Endpoint;
+import io.logmatic.android.endpoint.Endpoint;
 
 
 public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, Integer, Void> {
 
-    private static final long RECONNECTION_WAIT = 500; // 500 ms
-    private static final int MAX_ATTEMPT = 2;
-    private static final int MAX_EVENTS_PER_BULK = 10;
+    private static final long RECONNECTION_WAIT = 300; // between two attempts
+    private static final int MAX_ATTEMPT = 3;
+    private static final int MAX_EVENTS_PER_BULK = 1000;
     private static final int MAX_BYTES_PER_BULK = 1024 * 100; // 100 KB
-    private static final String LOGGING_TAG = "Logmatic";
 
+    private static final String TAG_NAME = EndpointManager.class.getSimpleName();
 
+    /** The endpoint implementation */
     private Endpoint endpoint;
 
 
     public EndpointManager(Endpoint endpoint) {
         super();
-
         this.endpoint = endpoint;
     }
 
 
     public void shutdown() {
-
         endpoint.closeConnection();
-
     }
 
 
@@ -42,10 +38,7 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
     protected Void doInBackground(ConcurrentLinkedDeque<String>... sources) {
 
 
-        // while the network `networkStatus` is available
-        // bulk all messages and send it to the endpoint
-        // if it's failed, retry until MAX_ATTEMPT
-
+        // actually, we have only one source.
         for (ConcurrentLinkedDeque<String> source : sources) {
 
             try {
@@ -53,30 +46,33 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
                 int attempt = 0;
                 while (attempt <= MAX_ATTEMPT) {
 
+                    // Prepare the bulks
+                    // Sending all events already store in the source
+                    // if new events come, they will be handled to next call (@see LogmaticAppender.tick())
+                    int minOfEventsToSend = source.size();
+                    int numberOfEventsSent = 0;
+                    boolean withoutFailure = true;
 
-                    Log.d(LOGGING_TAG, "Open a new connection to Logmatic.io");
+                    Log.v(TAG_NAME, "new attempt, sending " + minOfEventsToSend + " events at minimum");
+                    Log.v(TAG_NAME, "opening a new connection to Logmatic.io");
 
 
+                    // start a new connection
+                    if (endpoint.openConnection()) {
 
-                    if ( endpoint.openConnection()) {
-
-                        // prepare chunks
-                        int minOfEventsToSend = source.size(); // freeze
-                        int numberOfEventsSent = 0;
-
-                        Log.v(LOGGING_TAG, "Try to send " + minOfEventsToSend + " events (minimum)");
 
                         int j = 0;
-                        while (numberOfEventsSent < minOfEventsToSend) {
+                        // loop into the events, and bulk them
+                        while (numberOfEventsSent < minOfEventsToSend && withoutFailure) {
 
                             // bulk events
                             List<String> bulk = new LinkedList<>();
                             int totalOfBytes = 0;
 
-                            // Stack x event into a bulk operation
+                            // Check the max requirement
                             while (bulk.size() < MAX_EVENTS_PER_BULK && totalOfBytes < MAX_BYTES_PER_BULK) {
                                 String element = source.pollFirst();
-                                if (element == null) break; // empty queues;
+                                if (element == null) break; // empty source;
                                 totalOfBytes += element.length();
                                 bulk.add(element);
                             }
@@ -86,30 +82,33 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
                             for (String element : bulk) payload.append(element);
 
                             // send events
-                            boolean withoutFailure = endpoint.send(payload.toString());
+                            withoutFailure = endpoint.send(payload.toString());
+                            endpoint.flush();
 
                             // handle a failure
                             if (!withoutFailure) {
 
+                                // readd the events to the source
                                 for (int i = bulk.size() - 1; i >= 0; i--) {
-
                                     source.offerFirst(bulk.get(i));
                                     bulk.remove(i);
                                 }
+
+                                Log.v(TAG_NAME, "Bulk[ " + j + " ] failed,  rollback!");
+                                break;
 
                             }
 
 
                             numberOfEventsSent += bulk.size();
-                            Log.v(LOGGING_TAG, "Bulk(" + j + "] is OK,  " + bulk.size() + "/" + numberOfEventsSent + "events");
+                            Log.v(TAG_NAME, "Bulk[ " + j + " ] sent,  events: " + bulk.size() + "/" + numberOfEventsSent);
                             j++;
                         }
-
-                        break;
+                        if (withoutFailure) break;
                     }
 
 
-                    Log.d(LOGGING_TAG, "Attempt " + attempt + " failed, waiting for a new connection");
+                    Log.v(TAG_NAME, "attempt " + attempt + " failed, waiting for a new connection");
 
                     attempt++;
                     endpoint.closeConnection();
@@ -119,12 +118,13 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
 
 
             } catch (Exception e) {
-                e.printStackTrace();
-                Log.wtf(getClass().getName(), e);
+                Log.e(getClass().getName(), e.getMessage(), e);
             } finally {
                 endpoint.closeConnection();
             }
         }
+
+        Log.v(TAG_NAME, "Sending loop finished");
         return null;
     }
 

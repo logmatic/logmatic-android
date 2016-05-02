@@ -1,6 +1,5 @@
-package io.logmatic.asynclogger.endpoint;
+package io.logmatic.android.endpoint;
 
-import android.os.StrictMode;
 import android.util.Log;
 
 import java.io.DataOutputStream;
@@ -10,10 +9,12 @@ import java.net.Socket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-
+/**
+ * Provides a Secure TCP connection to Logmatic.io
+ */
 public class SecureTCPEndpoint implements Endpoint {
 
-    private SSLSocket sslSocket;
+    private SSLSocket socket;
     private DataOutputStream stream;
     private final String hostname;
     private final Integer port;
@@ -21,21 +22,10 @@ public class SecureTCPEndpoint implements Endpoint {
     public SecureTCPEndpoint(String hostname, Integer port) {
         this.port = port;
         this.hostname = hostname;
-        this.sslSocket = null;
+        this.socket = null;
 
     }
 
-    public SecureTCPEndpoint(SSLSocket socket) {
-        this.port = null;
-        this.hostname = null;
-        this.sslSocket = socket;
-    }
-
-
-    @Override
-    public boolean isBulkable() {
-        return false;
-    }
 
     @Override
     public boolean send(String data) {
@@ -43,7 +33,7 @@ public class SecureTCPEndpoint implements Endpoint {
         if (!isConnected()) return false;
 
         try {
-            stream.write((data + '\n').getBytes());
+            stream.write(data.getBytes());
             return true;
 
         } catch (IOException e) {
@@ -54,8 +44,17 @@ public class SecureTCPEndpoint implements Endpoint {
     }
 
     @Override
+    public boolean flush() {
+        try {
+            stream.flush();
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
+    @Override
     public boolean isConnected() {
-        return sslSocket.isConnected();
+        return socket.isConnected();
     }
 
 
@@ -65,7 +64,7 @@ public class SecureTCPEndpoint implements Endpoint {
         try {
             stream.flush();
             stream.close();
-            sslSocket.close();
+            socket.close();
         } catch (IOException e) {
             Log.e(getClass().getName(), "Connection shutdown failed", e);
         } catch (NullPointerException ne) {
@@ -80,13 +79,13 @@ public class SecureTCPEndpoint implements Endpoint {
 
         try {
 
-            if (sslSocket == null || sslSocket.isClosed()) {
-                Socket socket = new Socket(hostname, port);
+            if (socket == null || socket.isClosed()) {
+                Socket s = new Socket(hostname, port);
                 SSLSocketFactory sslFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-                sslSocket = (SSLSocket) sslFactory.createSocket(socket, hostname, port, true);
+                this.socket = (SSLSocket) sslFactory.createSocket(s, hostname, port, true);
             }
 
-            stream = new DataOutputStream(sslSocket.getOutputStream());
+            stream = new DataOutputStream(socket.getOutputStream());
             return true;
 
         } catch (IOException e) {
