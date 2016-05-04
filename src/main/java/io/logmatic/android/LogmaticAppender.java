@@ -13,7 +13,7 @@ import io.logmatic.android.endpoint.SecureTCPEndpoint;
 
 public class LogmaticAppender {
 
-    private static final String TAG = "Logmatic";
+    private static final String TAG = "android-log";
     private static final long IDLE_TIME_SECONDS = 60;
     /* Customer API token */
     private final String token;
@@ -21,9 +21,7 @@ public class LogmaticAppender {
     /* Network state */
     private boolean isConnected = true;
 
-    /* Constants props */
-    private static final String DST_HOST = "api.logmatic.io";
-    private static final int SSL_DST_PORT = 10515;
+
 
     /* Internal manager to handle the Logmatic connection  */
     private EndpointManager manager;
@@ -32,6 +30,7 @@ public class LogmaticAppender {
     ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
     /* The events queue */
+    //FIXME: Use another Deque, lib compatibility must be API-16 at min (not 21)
     private ConcurrentLinkedDeque<String> cache = new ConcurrentLinkedDeque<>();
 
 
@@ -43,7 +42,7 @@ public class LogmaticAppender {
         Log.i(getClass().getSimpleName(), "Network state initialization, isConnected: " + isConnected);
 
         if (manager == null) {
-            Endpoint endpoint = new SecureTCPEndpoint(DST_HOST, SSL_DST_PORT);
+            Endpoint endpoint = new SecureTCPEndpoint(SecureTCPEndpoint.LOGMATIC_DST_HOST, SecureTCPEndpoint.LOGMATIC_SSL_DST_PORT);
             this.manager = new EndpointManager(endpoint);
         }
 
