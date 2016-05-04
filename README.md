@@ -98,9 +98,9 @@ To log some events, you simply call logger's methods.
 
 Each method could be called with a simple message, just a piece of text.
 
-```java#### Disable legacy logging
+#### Disable legacy logging
 By default, the lib log all events to the Logact leggay logger. You can disable it during the build.
-```
+```java
         // init a new instance using your APIKey
         logger = new LoggerBuilder()
                 .init("YOUR-API-KEY")
@@ -135,7 +135,7 @@ To clearly explain what happens here, in this exact situation where everything i
     "datetime": "2016-05-03T17:43:18.311+0200",
     "appname": "android-log",
     "level": "DEBUG",
-    "message": ""Another debug event with one context to debug. The context will be parsed as Json",
+    "message": "Another debug event with one context to debug. The context will be parsed as Json",
     "context": {
 
         "attribute_string": "1",
