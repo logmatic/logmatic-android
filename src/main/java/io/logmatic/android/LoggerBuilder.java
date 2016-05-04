@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class LoggerBuilder {
 
-    public final static String DEFAULT_LOGGERNAME = "default";
+    public final static String DEFAULT_LOGGERNAME = "android-log";
 
     private String token;
     private LogmaticAppender appender;
