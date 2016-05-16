@@ -192,3 +192,5 @@ As reminder, here are  the exhautivie method list offered by the **Logmatic-andr
 | wtf(message) | Log as error with a piece of text |`logger.wtf("my message")`|
 | wtf(message, object) | Log as error with a piece of text and a custom context |`logger.wtf("my message", context)`|
 | addField(key, value) | add and extra field to all events. The value's type will be kept| `logger.addField("key", 123)`|
+=======
+Send log entries to Logmatic.io directly from your Android apps
