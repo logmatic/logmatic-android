@@ -3,21 +3,20 @@ package io.logmatic.android;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 import io.logmatic.android.endpoint.Endpoint;
 
 
-public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, Integer, Void> {
+public class EndpointManager extends AsyncTask<Deque<String>, Integer, Void> {
 
     private static final long RECONNECTION_WAIT = 300; // between two attempts
     private static final int MAX_ATTEMPT = 3;
     private static final int MAX_EVENTS_PER_BULK = 1000;
     private static final int MAX_BYTES_PER_BULK = 1024 * 100; // 100 KB
 
-    private static final String TAG_NAME = EndpointManager.class.getSimpleName();
 
     /** The endpoint implementation */
     private Endpoint endpoint;
@@ -35,11 +34,11 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
 
 
     @Override
-    protected Void doInBackground(ConcurrentLinkedDeque<String>... sources) {
+    protected Void doInBackground(Deque<String>... sources) {
 
 
         // actually, we have only one source.
-        for (ConcurrentLinkedDeque<String> source : sources) {
+        for (Deque<String> source : sources) {
 
             try {
 
@@ -53,8 +52,8 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
                     int numberOfEventsSent = 0;
                     boolean withoutFailure = true;
 
-                    Log.v(TAG_NAME, "new attempt, sending " + minOfEventsToSend + " events at minimum");
-                    Log.v(TAG_NAME, "opening a new connection to Logmatic.io");
+                    Log.v(Logger.TAG, "new attempt, sending " + minOfEventsToSend + " events at minimum");
+                    Log.v(Logger.TAG, "opening a new connection to Logmatic.io");
 
 
                     // start a new connection
@@ -94,21 +93,21 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
                                     bulk.remove(i);
                                 }
 
-                                Log.v(TAG_NAME, "Bulk[ " + j + " ] failed,  rollback!");
+                                Log.v(Logger.TAG, "Bulk[ " + j + " ] failed,  rollback!");
                                 break;
 
                             }
 
 
                             numberOfEventsSent += bulk.size();
-                            Log.v(TAG_NAME, "Bulk[ " + j + " ] sent,  events: " + bulk.size() + "/" + numberOfEventsSent);
+                            Log.v(Logger.TAG, "Bulk[ " + j + " ] sent,  events: " + bulk.size() + "/" + numberOfEventsSent);
                             j++;
                         }
                         if (withoutFailure) break;
                     }
 
 
-                    Log.v(TAG_NAME, "attempt " + attempt + " failed, waiting for a new connection");
+                    Log.v(Logger.TAG, "attempt " + attempt + " failed, waiting for a new connection");
 
                     attempt++;
                     endpoint.closeConnection();
@@ -124,7 +123,7 @@ public class EndpointManager extends AsyncTask<ConcurrentLinkedDeque<String>, In
             }
         }
 
-        Log.v(TAG_NAME, "Sending loop finished");
+        Log.v(Logger.TAG, "Sending loop finished");
         return null;
     }
 

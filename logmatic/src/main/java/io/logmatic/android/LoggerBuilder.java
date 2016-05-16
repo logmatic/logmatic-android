@@ -1,8 +1,13 @@
 package io.logmatic.android;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import java.util.AbstractMap;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +17,7 @@ import java.util.Set;
  */
 public class LoggerBuilder {
 
-    public final static String DEFAULT_LOGGERNAME = "android-log";
+    public final static String DEFAULT_LOGGERNAME = "android";
 
     private String token;
     private LogmaticAppender appender;
@@ -21,13 +26,18 @@ public class LoggerBuilder {
     private String name = DEFAULT_LOGGERNAME;
     private Set<Map.Entry<String, JsonElement>> extraFields = new HashSet();
 
+    private static final Gson gson = new GsonBuilder()
+            .serializeNulls()
+            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+            .create();
+
 
     public LoggerBuilder init(String youLogmaticKey) {
         this.token = youLogmaticKey;
         return this;
     }
 
-    public LoggerBuilder name(String name) {
+    public LoggerBuilder withName(String name) {
         this.name = name;
         return this;
     }
@@ -48,8 +58,39 @@ public class LoggerBuilder {
         return this;
     }
 
-    public void addFields(JsonObject extraFields) {
-        this.extraFields = extraFields.entrySet();
+
+    public void addField(String key, String value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+    }
+
+    public void addField(String key, Long value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+        ;
+    }
+
+    public void addField(String key, Integer value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+        ;
+    }
+
+    public void addField(String key, Float value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+        ;
+    }
+
+    public void addField(String key, Double value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+        ;
+    }
+
+    public void addField(String key, Boolean value) {
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+        ;
+    }
+
+    public void addField(String key, Date value) {
+
+        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value.getTime())));
     }
 
     public Logger build() {

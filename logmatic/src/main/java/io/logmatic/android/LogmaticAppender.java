@@ -1,7 +1,10 @@
 package io.logmatic.android;
 
+import android.os.Build;
 import android.util.Log;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -13,8 +16,8 @@ import io.logmatic.android.endpoint.SecureTCPEndpoint;
 
 public class LogmaticAppender {
 
-    private static final String TAG = "android-log";
     private static final long IDLE_TIME_SECONDS = 60;
+
     /* Customer API token */
     private final String token;
 
@@ -30,11 +33,21 @@ public class LogmaticAppender {
     ScheduledThreadPoolExecutor scheduler = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1);
 
     /* The events queue */
-    //FIXME: Use another Deque, lib compatibility must be API-16 at min (not 21)
-    private ConcurrentLinkedDeque<String> cache = new ConcurrentLinkedDeque<>();
+    private Deque<String> cache;
 
 
     public LogmaticAppender(String token, EndpointManager manager) {
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            cache  = new ConcurrentLinkedDeque<>();
+            Log.i(Logger.TAG, "Instantiate a ConcurrentLinkedDeque for the deque");
+        } else {
+            // FIXME handle concurrency
+            cache = new ArrayDeque();
+            Log.w(Logger.TAG, "Instantiate a ArrayDeque for the deque");
+        }
+
 
         // Set the network state
         // FIXME: Find a way to set the default network, without any connect.
@@ -88,12 +101,12 @@ public class LogmaticAppender {
      */
     public void tick() {
 
-        Log.v(TAG, "cron - tick()");
+        Log.v(Logger.TAG, "cron - tick()");
 
         // do nothing if we don't have a connection or the cache is empty
         if (!isConnected || cache.isEmpty()) return;
 
-        Log.d(TAG, "Start a new async task to send events to Logmation.io");
+        Log.d(Logger.TAG, "Start a new async task to send events to Logmation.io");
         manager.doInBackground(cache);
 
     }
@@ -101,7 +114,7 @@ public class LogmaticAppender {
 
     public void updateNetworkStatus(boolean isConnected) {
 
-        Log.d(TAG, "Network status changed, isConnected: " + isConnected);
+        Log.d(Logger.TAG, "Network status changed, isConnected: " + isConnected);
         this.isConnected = isConnected;
     }
 

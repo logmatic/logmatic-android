@@ -19,6 +19,7 @@ import java.util.Set;
 public class Logger {
 
 
+    public static final String TAG = "logmatic";
     private final String name;
     private final LogmaticAppender appender;
     private Set<Map.Entry<String, JsonElement>> extraFields;
@@ -36,7 +37,8 @@ public class Logger {
 
     /**
      * Default constructor
-     *  @param name          Application name
+     *
+     * @param name          Application withName
      * @param appender      The appender
      * @param timestamping  True to enable event timestamping
      * @param legacyLogging True to add legacy (logcat) logging
@@ -137,8 +139,6 @@ public class Logger {
 
 
     // Private methods
-
-
     private void internalLog(int level, String message) {
         internalLog(level, message, null);
     }
@@ -146,31 +146,51 @@ public class Logger {
 
     private void internalLog(int level, String message, Object context) {
 
+        // if it's enabled, log with Logcat as usual
         if (legacyLogging) {
             Log.println(level, name, message);
         }
 
-        // compile extra fields
+
+        // instantiate a new Json object from the context
         JsonObject event = new JsonObject();
+
+        try {
+            if (context != null) {
+                JsonElement root = gson.toJsonTree(context);
+                if (root.isJsonObject()) event = root.getAsJsonObject();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG,e.getMessage(), e);
+        }
+
+        // add extra and global fields
         for (Map.Entry<String, JsonElement> e : extraFields) {
             event.add(e.getKey(), e.getValue());
         }
+
+        // add mandatory fields
         event.addProperty("message", message);
-        event.addProperty("level", getLevelAsString(level));
+        event.addProperty("severity", getLevelAsString(level));
         event.addProperty("appname", name);
 
-        // add context
-        if (context != null) event.add("context", gson.toJsonTree(context));
 
-        // add datetime field
+        // add datetime field if it's enabled
         if (timestamping) {
-            event.addProperty("datetime", simpleDateFormat.format(new Date()));
+            event.addProperty("date", simpleDateFormat.format(new Date()));
         }
 
+        // send the event to the appender as string
         appender.append(gson.toJson(event));
 
 
     }
+
+
+    /**
+     * Simple matcher fro Logcat levels and default syslog levels
+     */
 
     private String getLevelAsString(int level) {
 
@@ -194,4 +214,5 @@ public class Logger {
     public LogmaticAppender getAppender() {
         return appender;
     }
+
 }

@@ -32,11 +32,22 @@ public class LoggerRegistry {
         loggers.put(name, logger);
     }
 
-    public static Logger getDefaultLogger(String name) {
+    /**
+     * Get a already instantiated logger
+     *
+     * @param name the logger name
+     * @return the desired logger
+     */
+    public static Logger getLogger(String name) {
         return loggers.get(name);
     }
 
+    /**
+     * Get the default instantiated logger
+     *
+     * @return the default logger
+     */
     public static Logger getDefaultLogger() {
-        return loggers.get(LoggerBuilder.DEFAULT_LOGGERNAME);
+        return getLogger(LoggerBuilder.DEFAULT_LOGGERNAME);
     }
 }
