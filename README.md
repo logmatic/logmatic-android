@@ -28,9 +28,9 @@ dependencies {
 ```
 ### Initialization
 You can start the logger whenever you want. The `onCreate` method of the main activity is probably
-a good choice in order to start logging as soon as possible.
+a good choice in order to use logging as soon as possible.
 
-Set your API key into the shared logger, add optional info if needed and start the logger.
+Set your API key, add optional info if needed before build the logger.
 
 Here is an example
 
@@ -70,7 +70,7 @@ To log some events, you simply call logger's methods.
 
 ```java
 
-        // log two events (info then debug)
+        // log an event (info)
         logger.i("This is a first info event from an android device");
 
 ```
@@ -98,7 +98,6 @@ a JsonObject. The simplest way to use it, is to attach a Map as is illustrated b
         Map<String, Object> context = new HashMap();
         context.put("session", getSessionId());
         context.put("emails", Arrays.toList("1@foo.com", "2@bar.io", "3@logmatic.io"));
-        ;
         logger.d("Another event with a context.", context);
 .
     }
@@ -145,7 +144,7 @@ At minimum, you have to set your API Key.
                 .build();
 ```
 
-By default, the lib log all events to the Logact leggay logger. You can disable it during the build.
+By default, the lib logs all events to the Logcat leggay logger. You can disable it during the build.
 ```java
         // init a new instance using your APIKey
         logger = new LoggerBuilder()
@@ -154,8 +153,8 @@ By default, the lib log all events to the Logact leggay logger. You can disable 
                 .build();
 ```
 
-It's the same for the timestamping', the lib adds the field `date` to all events.
-However, for testing purpose, you might be want to disable it.
+It's the same for the timestamping', our lib adds the field `date` to all events.
+However, you might be want to disable it for your tests.
 ```java
         // init a new instance using your APIKey
         logger = new LoggerBuilder()
@@ -164,32 +163,32 @@ However, for testing purpose, you might be want to disable it.
                 .build();
 ```
 
-As reminder, here are all the following methods offered by the **Logmatic-android** lib.
+As reminder, here are  the exhautivie method list offered by the **Logmatic-android** lib.
 ### LoggerBuilder
 
 | Method        | Description           |  Example  |
 | ------------- | ------------- |  ----- |
-| init(api_key): | Initialize the logger with a Logmatic API Key |  |
-| withName | set the logger and the application. This method add an extra field `appname`. By default, `appname` is android  | `"appname": "my-application-name"`|
-| disableTimestamping() | remove the `date` field from all events | |
-| disableLegacyLogging() | by default, the lib use `Logcat` as logger, if the method is called, only logs to Logmatic.io are kept | |
-| addField(key, value) | add and extra field to all events. The value type will be kept| `"key": "value"`|
-| build()| build a new logger instance with all options set | |
+| init(api_key) | Initialize the logger with a Logmatic API Key |  |
+| withName() | Set the logger and the application name. This method customize the extra field `appname`. By default, `appname` is `android`  | `"appname": "my-application-name"`|
+| disableTimestamping() | Remove the `date` field from all events | |
+| disableLegacyLogging() | By default, the lib uses `Logcat` as logger, if the method is called, only logs to Logmatic.io are kept | |
+| addField(key, value) | Add and extra field to all events. The value's type will be kept| `"key": "value"`|
+| build()| Build a new logger instance with all options set | |
 
 ### Logger
 
 | Method        | Description           |  Example  |
 | ------------- | ------------- |  ----- |
-| v(message) | log as verbose with a piece of text |`logger.v("my message")`|
-| v(message, object) | log as verbose with a piece of text and a custom context |`logger.v("my message", context)`|
-| d(message) | log as debug with a piece of text |`logger.d("my message")`|
-| d(message, object) | log as debug with a piece of text and a custom context |`logger.d("my message", context)`|
-| i(message) | log as info with a piece of text |`logger.i("my message")`|
-| i(message, object) | log as info with a piece of text and a custom context |`logger.i("my message", context)`|
-| w(message) | log as warning with a piece of text |`logger.w("my message")`|
-| w(message, object) | log as warning with a piece of text and a custom context |`logger.w("my message", context)`|
-| e(message) | log as error with a piece of text |`logger.e("my message")`|
-| e(message, object) | log as error with a piece of text and a custom context |`logger.e("my message", context)`|
-| wtf(message) | log as error with a piece of text |`logger.wtf("my message")`|
-| wtf(message, object) | log as error with a piece of text and a custom context |`logger.wtf("my message", context)`|
-| addField(key, value) | add and extra field to all events. The value type will be kept| `logger.addField("key", 123)`|
+| v(message) | Log as verbose with a piece of text |`logger.v("my message")`|
+| v(message, object) | Log as verbose with a piece of text and a custom context |`logger.v("my message", context)`|
+| d(message) | Log as debug with a piece of text |`logger.d("my message")`|
+| d(message, object) | Log as debug with a piece of text and a custom context |`logger.d("my message", context)`|
+| i(message) | Log as info with a piece of text |`logger.i("my message")`|
+| i(message, object) | Log as info with a piece of text and a custom context |`logger.i("my message", context)`|
+| w(message) | Log as warning with a piece of text |`logger.w("my message")`|
+| w(message, object) | Log as warning with a piece of text and a custom context |`logger.w("my message", context)`|
+| e(message) | Log as error with a piece of text |`logger.e("my message")`|
+| e(message, object) | Log as error with a piece of text and a custom context |`logger.e("my message", context)`|
+| wtf(message) | Log as error with a piece of text |`logger.wtf("my message")`|
+| wtf(message, object) | Log as error with a piece of text and a custom context |`logger.wtf("my message", context)`|
+| addField(key, value) | add and extra field to all events. The value's type will be kept| `logger.addField("key", 123)`|
