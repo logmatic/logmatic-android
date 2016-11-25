@@ -1,8 +1,9 @@
 package io.logmatic.android;
 
+import android.support.annotation.NonNull;
+import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Map;
  */
 public class LoggerRegistry {
 
-    private static Map<String, Logger> loggers = new HashMap();
+    private static ArrayMap<String, Logger> loggers = new ArrayMap<>();
 
 
     /**
@@ -28,7 +29,8 @@ public class LoggerRegistry {
     /**
      * Store the logger reference
      **/
-    public static void register(String name, Logger logger) {
+    public static void register(final @NonNull String name,
+                                final @NonNull Logger logger) {
         loggers.put(name, logger);
     }
 
@@ -38,7 +40,7 @@ public class LoggerRegistry {
      * @param name the logger name
      * @return the desired logger
      */
-    public static Logger getLogger(String name) {
+    public static Logger getLogger(final @NonNull String name) {
         return loggers.get(name);
     }
 
