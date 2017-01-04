@@ -1,6 +1,9 @@
 package io.logmatic.android;
 
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.util.ArrayMap;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
@@ -10,11 +13,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
 
 public class Logger {
 
@@ -22,7 +22,7 @@ public class Logger {
     public static final String TAG = "logmatic";
     private final String name;
     private final LogmaticAppender appender;
-    private Set<Map.Entry<String, JsonElement>> extraFields;
+    private ArrayMap<String, JsonElement> extraFields = new ArrayMap<>();
     private boolean timestamping;
     private boolean legacyLogging;
 
@@ -44,7 +44,11 @@ public class Logger {
      * @param legacyLogging True to add legacy (logcat) logging
      * @param extraFields   Global fields added to all events
      */
-    public Logger(String name, LogmaticAppender appender, boolean timestamping, boolean legacyLogging, Set<Map.Entry<String, JsonElement>> extraFields) {
+    public Logger(final @NonNull String name,
+                  final @NonNull LogmaticAppender appender,
+                  final boolean timestamping,
+                  final boolean legacyLogging,
+                  final @NonNull ArrayMap<String, JsonElement> extraFields) {
 
         this.name = name;
         this.appender = appender;
@@ -102,47 +106,50 @@ public class Logger {
         internalLog(Log.ERROR, message, context);
     }
 
-
-    public void addField(String key, String value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+    public Logger addField(final @NonNull String key, final @Nullable String value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Long value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public Logger addField(final @NonNull String key, final @Nullable Long value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Integer value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public Logger addField(final @NonNull String key, final @Nullable Integer value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Float value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public Logger addField(final @NonNull String key, final @Nullable Float value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Double value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public Logger addField(final @NonNull String key, final @Nullable Double value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Boolean value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public Logger addField(final @NonNull String key, final @Nullable Boolean value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Date value) {
-
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value.getTime())));
+    public Logger addField(final @NonNull String key, final @Nullable Date value) {
+        extraFields.put(key, gson.toJsonTree(value != null ? value.getTime() : null));
+        return this;
     }
 
+    public Logger removeField(final @NonNull String key) {
+        extraFields.remove(key);
+        return this;
+    }
 
     // Private methods
     private void internalLog(int level, String message) {
         internalLog(level, message, null);
     }
-
 
     private void internalLog(int level, String message, Object context) {
 
@@ -162,12 +169,14 @@ public class Logger {
             }
 
         } catch (Exception e) {
-            Log.e(TAG,e.getMessage(), e);
+            Log.e(TAG, e.getMessage(), e);
         }
 
         // add extra and global fields
-        for (Map.Entry<String, JsonElement> e : extraFields) {
-            event.add(e.getKey(), e.getValue());
+        final int extraFieldsCount = extraFields.size();
+        for (int i = 0; i < extraFieldsCount; i++) {
+            event.add(extraFields.keyAt(i), extraFields.valueAt(i));
+
         }
 
         // add mandatory fields
@@ -183,15 +192,11 @@ public class Logger {
 
         // send the event to the appender as string
         appender.append(gson.toJson(event));
-
-
     }
-
 
     /**
      * Simple matcher fro Logcat levels and default syslog levels
      */
-
     private String getLevelAsString(int level) {
 
         switch (level) {
@@ -210,9 +215,7 @@ public class Logger {
         }
     }
 
-
     public LogmaticAppender getAppender() {
         return appender;
     }
-
 }

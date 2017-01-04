@@ -1,16 +1,15 @@
 package io.logmatic.android;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.util.ArrayMap;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
-import java.util.AbstractMap;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Utility class for Logger building
@@ -24,7 +23,7 @@ public class LoggerBuilder {
     private boolean timestamping = true;
     private boolean legacyLogging = true;
     private String name = DEFAULT_LOGGERNAME;
-    private Set<Map.Entry<String, JsonElement>> extraFields = new HashSet();
+    private ArrayMap<String, JsonElement> extraFields = new ArrayMap<>();
 
     private static final Gson gson = new GsonBuilder()
             .serializeNulls()
@@ -59,52 +58,50 @@ public class LoggerBuilder {
     }
 
 
-    public void addField(String key, String value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable String value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Long value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Long value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Integer value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Integer value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Float value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Float value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Double value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Double value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Boolean value) {
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value)));
-        ;
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Boolean value) {
+        extraFields.put(key, gson.toJsonTree(value));
+        return this;
     }
 
-    public void addField(String key, Date value) {
-
-        extraFields.add(new AbstractMap.SimpleEntry(key, gson.toJsonTree(value.getTime())));
+    public LoggerBuilder addField(final @NonNull String key, final @Nullable Date value) {
+        extraFields.put(key, gson.toJsonTree(value != null ? value.getTime() : null));
+        return this;
     }
 
     public Logger build() {
-
         if (appender == null) {
             // Create a new appender, use generic options
             appender = new LogmaticAppender(token, null);
         }
 
-        Logger l = new Logger(name, appender, timestamping, legacyLogging, extraFields);
+        final Logger l = new Logger(name, appender, timestamping, legacyLogging, extraFields);
         LoggerRegistry.register(name, l);
         return l;
-
     }
-
 
 }
