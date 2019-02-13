@@ -55,8 +55,12 @@ public class LogmaticAppender {
         Log.i(getClass().getSimpleName(), "Network state initialization, isConnected: " + isConnected);
 
         if (manager == null) {
-            Endpoint endpoint = new SecureTCPEndpoint(SecureTCPEndpoint.LOGMATIC_DST_HOST, SecureTCPEndpoint.LOGMATIC_SSL_DST_PORT);
+            Endpoint endpoint = new SecureTCPEndpoint(
+                SecureTCPEndpoint.LOGMATIC_DST_HOST, SecureTCPEndpoint.LOGMATIC_SSL_DST_PORT
+            );
             this.manager = new EndpointManager(endpoint);
+        } else {
+            this.manager = manager;
         }
 
         this.token = token;
